@@ -1,0 +1,24 @@
+{
+  "name": "pi-artifact-forger",
+  "version": "0.1.0",
+  "description": "Artifact generation system for the Pi coding agent: a versioned single-file HTML design contract, a zero-context artifact-forger subagent, and the rules that turn plans and reports into reviewable, self-contained artifacts.",
+  "keywords": ["pi-package", "artifacts", "dashboards", "diagrams", "mermaid", "chartjs", "html"],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nsanta/pi-artifact-forger.git"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "install:agent": "node scripts/install-agent.mjs"
+  },
+  "pi": {
+    "skills": ["skills/*"]
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "private": true
+}
