@@ -1,0 +1,63 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Artifact Title" [level=1] [ref=e6]
+          - generic [ref=e7]: Template
+        - paragraph [ref=e8]: Concise subtitle, scope, or date
+      - generic [ref=e9]:
+        - combobox "Color palette" [ref=e10] [cursor=pointer]:
+          - option "Dusk Spectrum" [selected]
+          - option "Editorial Paper"
+          - option "Nordic Mineral"
+          - option "Okabe-Ito Refined"
+          - option "Botanical Ink"
+        - button "Dark" [ref=e11] [cursor=pointer]
+  - main [ref=e15]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: Primary Metric
+        - paragraph [ref=e19]: 1,284
+        - paragraph [ref=e20]: +12.4% vs prior period
+      - generic [ref=e21]:
+        - paragraph [ref=e22]: Median Latency
+        - paragraph [ref=e23]: 142 ms
+        - paragraph [ref=e24]: "p95: 310 ms"
+      - generic [ref=e25]:
+        - paragraph [ref=e26]: Active Palette
+        - generic [ref=e27]:
+          - generic "#003f5c" [ref=e28]
+          - generic "#58508d" [ref=e29]
+          - generic "#bc5090" [ref=e30]
+          - generic "#ff6361" [ref=e31]
+          - generic "#ffa600" [ref=e32]
+        - paragraph [ref=e33]: Dusk Spectrum (light)
+    - generic [ref=e34]:
+      - generic [ref=e37]:
+        - heading "Category Performance" [level=2] [ref=e38]
+        - paragraph [ref=e39]: Chart.js 4 with automatic theme & palette sync
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - heading "Workflow Architecture" [level=2] [ref=e45]
+            - paragraph [ref=e46]: Mermaid 11 with zoom & SVG export
+          - generic [ref=e47]:
+            - button "Zoom out" [ref=e48] [cursor=pointer]
+            - button "100%" [ref=e52] [cursor=pointer]
+            - button "Zoom in" [ref=e53] [cursor=pointer]
+            - button "Copy" [ref=e57] [cursor=pointer]
+            - button "SVG" [ref=e62] [cursor=pointer]
+        - document [ref=e69]:
+          - generic [ref=e71]:
+            - generic [ref=e78]:
+              - paragraph [ref=e84]: Metrics
+              - paragraph [ref=e90]: Systems
+            - generic [ref=e91]:
+              - paragraph [ref=e98]: User Prompt
+              - paragraph [ref=e105]: Load _template.html
+              - paragraph [ref=e112]: Artifact Type
+              - paragraph [ref=e119]: Chart.js 4
+              - paragraph [ref=e126]: Mermaid 11
+              - paragraph [ref=e133]: Save ./artifacts/*.html
+              - paragraph [ref=e140]: Auto-Open Browser

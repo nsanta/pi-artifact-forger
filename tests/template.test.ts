@@ -26,6 +26,21 @@ describe("canonical template design contract", () => {
     expect(template).toContain("themeVariables");
   });
 
+  it("sizes diagrams from a fit-to-container baseline, not natural scale", () => {
+    // 100% must adapt to diagram size: fit computed from viewBox vs stage box,
+    // applied as explicit pixel width (mermaid's width:100%/max-width collapses
+    // to the browser's 300x150 default inside a flex wrapper)
+    for (const marker of ["measureDiagram", "computeFit", "applyDiagramSize", "state.natural[id]", "viewBox"]) {
+      expect(template).toContain(marker);
+    }
+    expect(template).toContain("Math.min(availW / nat.w, availH / nat.h)");
+    // the old transform-scale approach must not come back
+    expect(template).not.toContain("style.transform = `scale(");
+    // flex centering must stay overflow-safe (scrollable when zoomed in)
+    expect(template).toContain('class="m-auto"');
+    expect(template).not.toContain("items-center justify-center\">\n          <div id=");
+  });
+
   it("is a complete html document", () => {
     expect(template.trimStart().startsWith("<!DOCTYPE html>")).toBe(true);
     expect(template.trimEnd().endsWith("</html>")).toBe(true);
