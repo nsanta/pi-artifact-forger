@@ -329,8 +329,11 @@
         if (!el) continue;
         const { svg } = await mermaid.render(`svg-${id}-${Date.now()}`, src.trim());
         el.innerHTML = svg;
-        measureDiagram(id);
-        applyDiagramSize(id);
+        /* kit functions may be absent on dashboards that stripped the kit */
+        if (typeof measureDiagram === 'function' && typeof applyDiagramSize === 'function') {
+          measureDiagram(id);
+          applyDiagramSize(id);
+        }
       }
     }
 
@@ -377,12 +380,17 @@
     }
 
     let fitRaf = 0;
-    window.addEventListener('resize', () => {
+    function reapplyAll() {
       cancelAnimationFrame(fitRaf);
       fitRaf = requestAnimationFrame(() => {
         for (const id of Object.keys(MERMAID_DIAGRAMS)) applyDiagramSize(id);
       });
-    });
+    }
+    window.addEventListener('resize', reapplyAll);
+    /* belt-and-suspenders: re-fit once everything (fonts, CDNs) has settled,
+       in case the first fit measured a still-shifting layout */
+    if (document.readyState === 'complete') reapplyAll();
+    else window.addEventListener('load', reapplyAll);
 
     async function copyMermaid(id, btn) {
       const src = MERMAID_DIAGRAMS[id]?.trim();
@@ -577,9 +585,18 @@
     })();
     /* PRINT-MODE:END */
 
-    // Boot
-    initCharts();
-    applyTheme();
+    // Boot — deferred until the whole document (including the Document Kit
+    // <style>/<script>) is parsed, so diagram fitting measures the final
+    // layout instead of an unstyled intermediate state.
+    function bootShared() {
+      initCharts();
+      applyTheme();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootShared);
+    } else {
+      bootShared();
+    }
   </script>
 
   <!-- GENRE:DOCUMENT KIT -->

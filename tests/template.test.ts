@@ -82,6 +82,17 @@ describe("document kit contract", () => {
     expect(kit).toContain("expected Fig.");
   });
 
+  it("defers shared boot until the document is parsed (fit-before-kit race)", () => {
+    // boot must not run while the kit <style> is still unparsed, or diagram
+    // fitting measures an unstyled layout and the svg overflows the stage
+    expect(template).toContain("document.readyState === 'loading'");
+    expect(template).toContain("addEventListener('DOMContentLoaded', bootShared)");
+    // fit system re-applies on load as belt-and-suspenders (shared region)
+    expect(template).toContain("addEventListener('load', reapplyAll)");
+    // shared render must tolerate a stripped kit (dashboard artifacts)
+    expect(template).toContain("typeof measureDiagram === 'function'");
+  });
+
   it("keeps kit CSS token-pure (no hex literals — token purity enforced)", () => {
     const css = kit
       .slice(kit.indexOf("<style>"), kit.indexOf("</style>"))
