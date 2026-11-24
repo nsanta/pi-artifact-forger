@@ -4,6 +4,8 @@
   "description": "Artifact generation system for the Pi coding agent: a versioned single-file HTML design contract, a zero-context artifact-forger subagent, and the rules that turn plans and reports into reviewable, self-contained artifacts.",
   "keywords": [
     "pi-package",
+    "pi",
+    "pi-coding-agent",
     "artifacts",
     "dashboards",
     "diagrams",
@@ -17,6 +19,13 @@
     "url": "git+https://github.com/nsanta/pi-artifact-forger.git"
   },
   "type": "module",
+  "files": [
+    "resources",
+    "agents",
+    "skills",
+    "scripts",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "test": "vitest run",
     "install:agent": "node scripts/install-agent.mjs"
@@ -30,6 +39,5 @@
     "happy-dom": "^21.0.4",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
-  },
-  "private": true
+  }
 }

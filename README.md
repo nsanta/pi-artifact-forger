@@ -16,7 +16,13 @@ Three pieces:
 
 ## Install
 
-From a published git repository (owner placeholder until published):
+From npm (recommended):
+
+```sh
+pi install npm:pi-artifact-forger
+```
+
+Or straight from the git repository:
 
 ```sh
 pi install git:github.com/nsanta/pi-artifact-forger
