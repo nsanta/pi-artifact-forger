@@ -44,6 +44,40 @@ describe("artifact-forger agent definition", () => {
   });
 });
 
+describe("genre routing contract", () => {
+  const agentBody = readFileSync(resolve(ROOT, "agents/artifact-forger.md"), "utf8");
+  const skill = resolve(ROOT, "skills/artifact-forger/SKILL.md");
+  const skillBody = readFileSync(skill, "utf8");
+
+  it("routes all genres with override-wins, tie-break, and ambiguity rules", () => {
+    for (const marker of ["dashboard", "report", "tech-spec", "product-spec", "manual"]) {
+      expect(agentBody).toContain(marker);
+    }
+    expect(agentBody.toLowerCase()).toContain("override");
+    expect(agentBody).toContain("outranks data presence");
+    expect(agentBody).toContain("prose spine with any data");
+  });
+
+  it("defines the stale-template fallback without editing protected templates", () => {
+    expect(agentBody).toContain("contract:artifact-forger v2");
+    expect(agentBody).toContain("inline-append");
+    expect(agentBody).toContain("NEVER overwrite");
+  });
+
+  it("keeps figure numbering static and checklists persistence-free", () => {
+    expect(agentBody).toContain("static numbering");
+    expect(agentBody).toContain("no persistence");
+  });
+
+  it("skill mirrors genres compactly and defers to the agent file", () => {
+    for (const marker of ["dashboard", "tech-spec", "product-spec", "manual"]) {
+      expect(skillBody).toContain(marker);
+    }
+    expect(skillBody).toContain("source of truth");
+    expect(skillBody).toContain("contract:artifact-forger v2");
+  });
+});
+
 describe("package surface", () => {
   it("ships the artifact-forger skill with frontmatter", () => {
     const fm = frontmatter(resolve(ROOT, "skills/artifact-forger/SKILL.md"));

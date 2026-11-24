@@ -46,3 +46,39 @@ describe("canonical template design contract", () => {
     expect(template.trimEnd().endsWith("</html>")).toBe(true);
   });
 });
+
+describe("document kit contract", () => {
+  const kitStart = template.indexOf("<!-- GENRE:DOCUMENT KIT -->");
+  const kitEnd = template.indexOf("<!-- /GENRE:DOCUMENT KIT -->");
+  const kit = kitStart >= 0 && kitEnd > kitStart ? template.slice(kitStart, kitEnd) : "";
+  const count = (haystack: string, needle: string) => haystack.split(needle).length - 1;
+
+  it("marks the contract version and delimits both layout blocks exactly once", () => {
+    expect(count(template, "contract:artifact-forger v2")).toBe(1);
+    expect(count(template, "<!-- GENRE:DASHBOARD STARTER -->")).toBe(1);
+    expect(count(template, "<!-- /GENRE:DASHBOARD STARTER -->")).toBe(1);
+    expect(count(template, "<!-- GENRE:DOCUMENT KIT -->")).toBe(1);
+    expect(count(template, "<!-- /GENRE:DOCUMENT KIT -->")).toBe(1);
+  });
+
+  it("keeps the kit self-inert: .doc-scoped CSS and DOM-guarded JS", () => {
+    const css = kit
+      .slice(kit.indexOf("<style>"), kit.indexOf("</style>"))
+      .replace(/\/\*[\s\S]*?\*\//g, "");
+    const selectors = [...css.matchAll(/([^{}]+)\{/g)].map((m) => m[1].trim());
+    expect(selectors.length).toBeGreaterThan(20);
+    for (const sel of selectors) {
+      expect(sel.startsWith("@") || sel.includes(".doc")).toBe(true);
+    }
+    const js = kit.slice(kit.indexOf("<script>"), kit.lastIndexOf("</script>"));
+    expect(js).toContain("querySelector('.doc')");
+    expect(js).toContain("if (!doc) return");
+    // F3: checklist persistence is deliberately absent in v1
+    expect(js).not.toContain("localStorage");
+  });
+
+  it("validates static figure numbering authored by the agent", () => {
+    expect(kit).toContain("Fig\\.");
+    expect(kit).toContain("expected Fig.");
+  });
+});
