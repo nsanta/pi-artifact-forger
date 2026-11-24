@@ -28,7 +28,8 @@
   ],
   "scripts": {
     "test": "vitest run",
-    "install:agent": "node scripts/install-agent.mjs"
+    "install:agent": "node scripts/install-agent.mjs",
+    "make-examples": "node scripts/make-examples.mjs"
   },
   "pi": {
     "skills": [

@@ -13,6 +13,7 @@ Three pieces:
 | **Design contract** | `resources/artifact-forger/_template.html` | Single-file HTML design system: five palettes (dusk default), light/dark, Chart.js 4 + Mermaid 11 theming, zoom/copy/export diagram controls, and a self-inert Document Kit for prose genres (report, tech-spec, product-spec, manual). Versioned (`contract:artifact-forger v2`); never overwritten in target projects — upgrade by full re-bootstrap. |
 | **Agent** | `agents/artifact-forger.md` | Zero-context `artifact-forger` subagent (read/grep/write/edit/bash). Delegating generation here keeps the ~19 KB design system out of the main session's context. |
 | **Skill** | `skills/artifact-forger/SKILL.md` | Ships with the pi package; trigger rules + inline-generation fallback when the agent isn't installed. |
+| **Examples** | `examples/` | One sample artifact per use case (dashboard, report, tech-spec, product-spec, manual, decision, roadmap, release notes) — see [`examples/README.md`](examples/README.md). Regenerate with `npm run make-examples`. |
 
 ## Install
 
