@@ -71,6 +71,34 @@
       border: 1px solid var(--border);
       border-radius: 0.5rem;
     }
+
+    /* ============================================================
+     * PRINT-MODE — shared print styling for every genre.
+     * Contract scoping exemption: bare element selectors are allowed
+     * ONLY inside this @media print block. Light tokens arrive via the
+     * --print-* twins set by applyTheme (per-palette light values).
+     * ============================================================ */
+    @media print {
+      :root {
+        --bg: var(--print-bg) !important;
+        --surface: var(--print-surface) !important;
+        --surface-muted: var(--print-surface-muted) !important;
+        --border: var(--print-border) !important;
+        --text: var(--print-text) !important;
+        --text-muted: var(--print-text-muted) !important;
+        --accent: var(--print-accent) !important;
+        --grid-line: var(--print-grid-line) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      body { background: var(--bg) !important; }
+      header select, header button, .btn, .table-filter, .doc-search { display: none !important; }
+      main .grid { display: block; }
+      main .grid > * { margin-bottom: 1.25rem; }
+      h2, h3 { break-after: avoid; }
+      figure, .callout, .spec-meta, .doc-table tr, ol.steps li, ul.checklist li,
+      .milestone, .diff-pair, .changelog-list li { break-inside: avoid; }
+    }
   </style>
 </head>
 <body class="min-h-screen antialiased">
@@ -510,6 +538,22 @@
       };
       Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
 
+      /* Print twins: light values of the active palette, consumed by the
+         PRINT-MODE @media block. Keeps printed chrome light per palette,
+         snapshot-safe (no JS timing involved). */
+      const lightTheme = THEMES[state.palette].light;
+      const printVars = {
+        '--print-bg': lightTheme.bg,
+        '--print-surface': lightTheme.surface,
+        '--print-surface-muted': lightTheme.surfaceMuted,
+        '--print-border': lightTheme.border,
+        '--print-text': lightTheme.text,
+        '--print-text-muted': lightTheme.textMuted,
+        '--print-accent': lightTheme.accent,
+        '--print-grid-line': lightTheme.gridLine
+      };
+      Object.entries(printVars).forEach(([k, v]) => root.style.setProperty(k, v));
+
       localStorage.setItem('artifact-palette', state.palette);
       localStorage.setItem('artifact-mode', state.mode);
 
@@ -534,6 +578,28 @@
       state.mode = state.mode === 'dark' ? 'light' : 'dark';
       applyTheme();
     });
+
+    /* PRINT-MODE:BEGIN — shared print handlers (self-inert; snapshot-safe
+       light forcing with persistence bypass: the user's dark preference
+       survives the print job, restore reads memory not localStorage). */
+    (function () {
+      let printRestoreMode = null;
+      window.addEventListener('beforeprint', () => {
+        if (state.mode !== 'dark') return;
+        printRestoreMode = 'dark';
+        state.mode = 'light';
+        applyTheme(); /* also kicks chart re-theme + mermaid re-render (best-effort) */
+        localStorage.setItem('artifact-mode', 'dark');
+      });
+      window.addEventListener('afterprint', () => {
+        if (printRestoreMode === 'dark') {
+          printRestoreMode = null;
+          state.mode = 'dark';
+          applyTheme();
+        }
+      });
+    })();
+    /* PRINT-MODE:END */
 
     // Boot
     initCharts();
@@ -740,9 +806,137 @@
       font-size: 12px;
       color: var(--text-muted);
     }
+    /* ---- batch 1 vocabulary: tables / search / decision / roadmap / diffs ---- */
+    .doc .doc-table th[tabindex] { cursor: pointer; user-select: none; }
+    .doc .doc-table th[aria-sort="ascending"]::after { content: " \25B2"; font-size: 9px; }
+    .doc .doc-table th[aria-sort="descending"]::after { content: " \25BC"; font-size: 9px; }
+    .doc .table-filter {
+      width: 100%;
+      max-width: 16rem;
+      margin-bottom: 0.6rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 12.5px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .doc .table-filter:focus { border-color: var(--accent); }
+    .doc-search { position: fixed; inset: 0; z-index: 50; display: none; }
+    .doc-search.open { display: block; }
+    .doc-search .search-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); }
+    .doc-search .search-panel {
+      position: relative;
+      max-width: 34rem;
+      margin: 12vh auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+    .doc-search .search-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      padding: 0.8rem 1rem;
+      font-size: 14px;
+      font-family: inherit;
+      border-bottom: 1px solid var(--border);
+    }
+    .doc-search .search-results { max-height: 50vh; overflow: auto; margin: 0; padding: 0.3rem; list-style: none; }
+    .doc-search .search-results a {
+      display: block;
+      padding: 0.45rem 0.7rem;
+      border-radius: 0.4rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .doc-search .search-results a:hover,
+    .doc-search .search-results a.selected { background: var(--surface-muted); }
+    .doc-search .search-results .snippet { display: block; font-size: 11.5px; color: var(--text-muted); }
+    .doc-search .search-empty { padding: 0.8rem 1rem; font-size: 12.5px; color: var(--text-muted); }
+    .doc .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0 0 1.25rem; }
+    .doc .pros-cons > div {
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.7rem 0.9rem;
+      background: var(--surface);
+      font-size: 13.5px;
+    }
+    .doc .pros-cons h4 {
+      margin: 0 0 0.4rem;
+      font-size: 0.6875rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .doc .pros-cons ul { margin: 0; padding-left: 1.1rem; }
+    .doc .milestone { position: relative; border-left: 2px solid var(--border); padding: 0 0 1.5rem 1.4rem; }
+    .doc .milestone::before {
+      content: "";
+      position: absolute;
+      left: -0.42rem;
+      top: 0.3rem;
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 9999px;
+      background: var(--surface-muted);
+      border: 2px solid var(--border);
+    }
+    .doc .milestone.is-done::before { background: var(--accent); border-color: var(--accent); }
+    .doc .milestone.is-current::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 0.22rem var(--surface-muted); }
+    .doc .milestone:last-child { padding-bottom: 0.25rem; }
+    .doc .milestone h3 { margin: 0 0 0.3rem; font-size: 14px; line-height: 20px; font-weight: 600; }
+    .doc .milestone .ms-meta {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0 0 0.5rem;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .doc .ms-date, .doc .cl-version {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    .doc .diff-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0 0 1.25rem; }
+    .doc .diff-pair pre.doc-code { margin: 0; }
+    .doc .diff-pair .diff-label {
+      display: block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .doc pre.doc-code del,
+    .doc pre.doc-code ins { display: block; text-decoration: none; border-left: 2px solid var(--border); padding-left: 0.45rem; }
+    .doc pre.doc-code del { color: var(--text-muted); text-decoration: line-through; }
+    .doc pre.doc-code del::before { content: "\2212  "; }
+    .doc pre.doc-code ins { border-left-color: var(--accent); }
+    .doc pre.doc-code ins::before { content: "+ "; color: var(--accent); font-weight: 600; }
+    .doc .changelog-list { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+    .doc .changelog-list > li { border-left: 2px solid var(--border); padding: 0 0 1.1rem 1.4rem; position: relative; }
+    .doc .changelog-list > li:last-child { padding-bottom: 0; }
+    .doc .changelog-list .cl-version { font-weight: 600; margin-right: 0.5rem; }
+    .doc .changelog-list .cl-date { font-size: 12px; color: var(--text-muted); }
+    .doc .changelog-list ul { margin: 0.4rem 0 0; padding-left: 1.2rem; font-size: 13.5px; }
+    @media print {
+      .doc { display: block; padding: 0; max-width: none; }
+      .doc-toc { position: static; max-height: none; border: none; background: none; padding: 0; }
+      .doc-body { max-width: none; }
+    }
     @media (max-width: 1023px) {
       .doc { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
       .doc-toc { position: static; max-height: none; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.65rem 0.75rem; background: var(--surface); }
+      .doc .pros-cons, .doc .diff-pair { grid-template-columns: 1fr; }
     }
   </style>
   <script>
@@ -811,6 +1005,179 @@
       });
       seen.forEach(function (n, i) {
         if (n !== i + 1) console.warn('doc-figure numbering: expected Fig. ' + (i + 1) + ', found Fig. ' + n);
+      });
+
+      /* ---- table enhancement: sort (click + Enter/Space) and data-filterable ---- */
+      doc.querySelectorAll('.doc-table').forEach(function (table) {
+        const ths = table.querySelectorAll('th');
+        if (ths.length) {
+          ths.forEach(function (th, colIndex) {
+            th.setAttribute('tabindex', '0');
+            const activate = function () {
+              const dir = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
+              ths.forEach(function (other) { other.removeAttribute('aria-sort'); });
+              th.setAttribute('aria-sort', dir);
+              const tbody = table.querySelector('tbody');
+              if (!tbody) return;
+              const rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+              const cellVal = function (tr) {
+                const cell = tr.children[colIndex];
+                return cell ? cell.textContent.trim() : '';
+              };
+              const numeric = rows.length > 0 && rows.every(function (tr) {
+                const cell = tr.children[colIndex];
+                if (!cell) return false;
+                return cell.classList.contains('num') || !isNaN(parseFloat(cellVal(tr).replace(/[^0-9.\-]/g, '')));
+              });
+              rows.sort(function (a, b) {
+                const av = cellVal(a), bv = cellVal(b);
+                const cmp = numeric
+                  ? (parseFloat(av.replace(/[^0-9.\-]/g, '')) || 0) - (parseFloat(bv.replace(/[^0-9.\-]/g, '')) || 0)
+                  : av.localeCompare(bv);
+                return dir === 'ascending' ? cmp : -cmp;
+              });
+              rows.forEach(function (tr) { tbody.appendChild(tr); });
+            };
+            th.addEventListener('click', activate);
+            th.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+            });
+          });
+        }
+        if (table.hasAttribute('data-filterable')) {
+          const input = document.createElement('input');
+          input.type = 'search';
+          input.className = 'table-filter';
+          input.placeholder = 'Filter rows\u2026';
+          input.setAttribute('aria-label', 'Filter table rows');
+          table.parentNode.insertBefore(input, table);
+          input.addEventListener('input', function () {
+            const q = input.value.trim().toLowerCase();
+            table.querySelectorAll('tbody tr').forEach(function (tr) {
+              tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+          });
+        }
+      });
+
+      /* ---- in-document search palette: Ctrl+K / Cmd+K / '/' (guards: .doc + keydown) ---- */
+      let searchOpen = false;
+      let lastFocus = null;
+      let searchIndex = null;
+      let selectedIdx = 0;
+
+      function buildIndex() {
+        if (searchIndex) return searchIndex;
+        searchIndex = [];
+        const usedIds = {};
+        const headings = document.querySelectorAll('.doc-body h2, .doc-body h3');
+        headings.forEach(function (h, i) {
+          if (!h.id) h.id = slugify(h.textContent, usedIds);
+          const next = headings[i + 1];
+          let text = '';
+          let node = h.nextElementSibling;
+          while (node && node !== next) { text += ' ' + node.textContent; node = node.nextElementSibling; }
+          searchIndex.push({ heading: h.textContent.trim(), id: h.id, section: text.replace(/\s+/g, ' ').trim().slice(0, 400) });
+        });
+        return searchIndex;
+      }
+
+      function closeSearch() {
+        searchOpen = false;
+        const overlay = document.querySelector('.doc-search');
+        if (overlay) overlay.classList.remove('open');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+
+      function openSearch() {
+        if (searchOpen) return;
+        if (!doc.isConnected) return; /* stale re-eval guard */
+        searchOpen = true;
+        lastFocus = document.activeElement;
+        let overlay = document.querySelector('.doc-search');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.className = 'doc-search';
+          overlay.setAttribute('role', 'dialog');
+          overlay.setAttribute('aria-modal', 'true');
+          overlay.setAttribute('aria-label', 'Search document');
+          overlay.innerHTML = '<div class="search-backdrop"></div>' +
+            '<div class="search-panel">' +
+            '<input class="search-input" type="text" placeholder="Search\u2026 (Esc to close)" aria-label="Search document">' +
+            '<ol class="search-results"></ol>' +
+            '</div>';
+          doc.appendChild(overlay);
+          const input = overlay.querySelector('.search-input');
+          const results = overlay.querySelector('.search-results');
+          const backdrop = overlay.querySelector('.search-backdrop');
+
+          function renderResults(q) {
+            const ql = q.trim().toLowerCase();
+            results.innerHTML = '';
+            selectedIdx = 0;
+            if (!ql) {
+              results.innerHTML = '<li class="search-empty">Type to search headings and sections.</li>';
+              return;
+            }
+            const headingHits = [], sectionHits = [];
+            buildIndex().forEach(function (entry) {
+              if (entry.heading.toLowerCase().includes(ql)) headingHits.push(entry);
+              else if (entry.section.toLowerCase().includes(ql)) sectionHits.push(entry);
+            });
+            const hits = headingHits.concat(sectionHits).slice(0, 20);
+            if (!hits.length) {
+              results.innerHTML = '<li class="search-empty">No matches.</li>';
+              return;
+            }
+            hits.forEach(function (entry, i) {
+              const li = document.createElement('li');
+              const a = document.createElement('a');
+              a.href = '#' + entry.id;
+              a.innerHTML = entry.heading + '<span class="snippet">' + entry.section.slice(0, 120) + '</span>';
+              if (i === 0) a.classList.add('selected');
+              li.appendChild(a);
+              results.appendChild(li);
+            });
+          }
+
+          input.addEventListener('input', function () { renderResults(input.value); });
+          input.addEventListener('keydown', function (e) {
+            const items = results.querySelectorAll('a');
+            if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); if (!items.length) return; selectedIdx = Math.min(selectedIdx + 1, items.length - 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); if (!items.length) return; selectedIdx = Math.max(selectedIdx - 1, 0); }
+            else if (e.key === 'Enter') {
+              e.preventDefault();
+              if (items[selectedIdx]) { const href = items[selectedIdx].getAttribute('href'); closeSearch(); location.hash = href; }
+              return;
+            } else return;
+            items.forEach(function (a, i) { a.classList.toggle('selected', i === selectedIdx); });
+          });
+          backdrop.addEventListener('click', closeSearch);
+          overlay.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            const focusables = overlay.querySelectorAll('input, a');
+            const first = focusables[0], last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          });
+        }
+        overlay.classList.add('open');
+        const input = overlay.querySelector('.search-input');
+        input.focus();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      document.addEventListener('keydown', function (e) {
+        const isShortkey = (e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K');
+        const tag = (document.activeElement || {}).tagName || '';
+        const isSlash = e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(tag);
+        if (isShortkey || isSlash) {
+          e.preventDefault();
+          openSearch();
+        } else if (e.key === 'Escape' && searchOpen) {
+          closeSearch();
+        }
       });
     })();
   </script>

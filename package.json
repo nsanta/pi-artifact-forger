@@ -1,6 +1,6 @@
 {
   "name": "pi-artifact-forger",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Artifact generation system for the Pi coding agent: a versioned single-file HTML design contract, a zero-context artifact-forger subagent, and the rules that turn plans and reports into reviewable, self-contained artifacts.",
   "keywords": [
     "pi-package",

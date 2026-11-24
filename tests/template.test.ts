@@ -81,4 +81,52 @@ describe("document kit contract", () => {
     expect(kit).toContain("Fig\\.");
     expect(kit).toContain("expected Fig.");
   });
+
+  it("keeps kit CSS token-pure (no hex literals — token purity enforced)", () => {
+    const css = kit
+      .slice(kit.indexOf("<style>"), kit.indexOf("</style>"))
+      .replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3}\b|#[0-9a-fA-F]{6}\b/);
+  });
+
+  it("ships print mode in the shared region with a persistence bypass", () => {
+    const dashEnd = template.indexOf("<!-- /GENRE:DASHBOARD STARTER -->");
+    const printJs = template.indexOf("/* PRINT-MODE:BEGIN");
+    expect(printJs).toBeGreaterThan(dashEnd);
+    expect(printJs).toBeLessThan(kitStart);
+    for (const marker of [
+      "--print-bg",
+      "beforeprint",
+      "afterprint",
+      "-webkit-print-color-adjust",
+      "print-color-adjust",
+      "PRINT-MODE:END",
+    ]) {
+      expect(template).toContain(marker);
+    }
+    // forced-light persistence bypass: dark preference survives the print job
+    expect(template).toMatch(/applyTheme\(\);[\s\S]{0,160}localStorage\.setItem\('artifact-mode', 'dark'\)/);
+  });
+
+  it("ships the batch-1 kit vocabulary with named guards", () => {
+    for (const marker of [
+      "aria-sort",
+      "data-filterable",
+      "table-filter",
+      ".pros-cons",
+      ".milestone",
+      ".diff-pair",
+      ".changelog-list",
+      "pre.doc-code del",
+      ".doc-search",
+      "ctrlKey || e.metaKey",
+    ]) {
+      expect(kit).toContain(marker);
+    }
+    // keyboard activation for sort + search focus management
+    expect(kit).toContain("e.key === 'Enter' || e.key === ' '");
+    expect(kit).toContain("lastFocus.focus()");
+    // bespoke overlay by design — native <dialog> deliberately not used
+    expect(kit).not.toContain("showModal");
+  });
 });

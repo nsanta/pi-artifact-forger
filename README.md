@@ -50,7 +50,7 @@ This copies the agent to `~/.pi/agent/agents/artifact-forger.md`, the canonical 
 In any pi session, in any project:
 
 - *"Make a dashboard of our Q3 cloud spend"* → the session delegates to `artifact-forger`, which bootstraps `artifacts/_template.html` if the project has none, generates `artifacts/<name>.html`, and opens it in your browser. It returns just the path — no design-system context leaks into your session.
-- *"Draft a tech spec for the importer"* / *"write up this migration as a runbook"* → the agent auto-detects the genre: dense data → dashboard; work summary → report; proposal for review → tech-spec / product-spec; procedure → manual. Document genres get a reading layout with TOC, callouts, tables, and statically numbered figures; you can always force a genre in the request.
+- *"Draft a tech spec for the importer"* / *"write up this migration as a runbook"* → the agent auto-detects the genre: dense data → dashboard; work summary → report; proposal → tech-spec / product-spec; decision record → ADR-style decision layout; milestone plan → roadmap; release notes/changelog and migration guides get dedicated structures; procedure → manual. Document genres get a reading layout with TOC, callouts, tables, sortable/filterable tables, `Ctrl+K` search, print-friendly styling, and statically numbered figures; you can always force a genre in the request.
 - *"Use the nordic palette"* / *"hand-drawn diagram style"* → per-artifact overrides.
 - Small tweaks ("add a chart", "change the wording") → edited in place, no delegation.
 

@@ -69,6 +69,26 @@ describe("genre routing contract", () => {
     expect(agentBody).toContain("no persistence");
   });
 
+  it("routes decision/roadmap with precedence and shared-region keep-list", () => {
+    expect(agentBody).toContain("decision");
+    expect(agentBody).toContain("roadmap");
+    expect(agentBody).toContain("as the deliverable");
+    expect(agentBody).toContain("rollout *section*");
+    expect(agentBody.toLowerCase()).toContain("release notes");
+    expect(agentBody).toContain("migration guide");
+    expect(agentBody).toContain("entire shared script block");
+    expect(agentBody).toContain("one `<del>`/`<ins>` element per changed line");
+    expect(agentBody).toContain("data-filterable");
+    expect(agentBody).toContain("Ctrl+K");
+  });
+
+  it("skill mirrors the batch-1 additions compactly", () => {
+    expect(skillBody).toContain("decision");
+    expect(skillBody).toContain("roadmap");
+    expect(skillBody).toContain("release notes");
+    expect(skillBody).toContain("Ctrl+K");
+  });
+
   it("skill mirrors genres compactly and defers to the agent file", () => {
     for (const marker of ["dashboard", "tech-spec", "product-spec", "manual"]) {
       expect(skillBody).toContain(marker);
