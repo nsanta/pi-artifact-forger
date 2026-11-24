@@ -1,5 +1,7 @@
 # Examples
 
+**Start here: [`examples/index.html`](examples/index.html)** — a navigable gallery of all samples.
+
 One sample artifact per use case, each generated from the canonical design contract by
 [`scripts/make-examples.mjs`](../scripts/make-examples.mjs) (`npm run make-examples`).
 All content is invented and badged accordingly — open them over `file://` and try the

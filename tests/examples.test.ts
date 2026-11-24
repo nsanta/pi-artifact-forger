@@ -5,7 +5,7 @@ import { resolve, dirname } from "node:path";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const EXAMPLES = resolve(ROOT, "examples");
-const files = readdirSync(EXAMPLES).filter((f) => f.endsWith(".html")).sort();
+const files = readdirSync(EXAMPLES).filter((f) => f.endsWith(".html") && f !== "index.html").sort();
 
 const EXPECTED = [
   "dashboard-quarterly-spend.html",
@@ -69,5 +69,17 @@ describe("examples", () => {
     for (const f of files) {
       expect(readFileSync(resolve(EXAMPLES, f), "utf8")).toContain(version);
     }
+  });
+
+  it("ships a navigable index linking every example", () => {
+    const index = readFileSync(resolve(EXAMPLES, "index.html"), "utf8");
+    expect(index.trimStart().startsWith("<!DOCTYPE html>")).toBe(true);
+    for (const f of EXPECTED) {
+      expect(index, "index must link " + f).toContain('href="' + f + '"');
+    }
+    expect(index).toContain("npm run make-examples");
+    // the index is navigation, not a plan: no source-of-truth footer required,
+    // but it must not carry the dashboard starter either
+    expect(index).not.toContain("GENRE:DASHBOARD STARTER");
   });
 });

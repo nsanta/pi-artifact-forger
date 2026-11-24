@@ -557,15 +557,84 @@ makeDoc("release-notes-importer-0.3.0.html", {
 
 /* ------------------------------------------------------------------ */
 
+const EXAMPLE_META = [
+  { file: "dashboard-quarterly-spend.html", label: "Dashboard", title: "Q3 FY26 Cloud Spend", blurb: "KPI row, Chart.js card and a Mermaid spend flow with zoom, copy and SVG export.", tags: "KPIs · chart · diagram" },
+  { file: "report-sprint-42.html", label: "Report", title: "Sprint 42 — Delivery Review", blurb: "TL;DR hero, metrics strip, findings with a figure and a table, appendix.", tags: "TOC · metrics · figure" },
+  { file: "tech-spec-importer-service.html", label: "Tech Spec", title: "Importer Service — Tech Spec", blurb: "Spec header, decision callout, sortable/filterable table, steps, before/after diff.", tags: "TOC · callouts · table · diff" },
+  { file: "product-spec-onboarding.html", label: "Product Spec", title: "Onboarding Revamp — Product Spec", blurb: "Personas, handDrawn UX flow figure, success-metric line chart.", tags: "TOC · handDrawn · chart" },
+  { file: "manual-importer-runbook.html", label: "Manual", title: "Importer Rollback Runbook", blurb: "Prereq chips, warning callout, steps with states, checklists, troubleshooting.", tags: "steps · checklists · prereqs" },
+  { file: "decision-queue-vendor.html", label: "Decision", title: "ADR-014 — Queue Vendor for the Importer", blurb: "Pros/cons pairs, comparison matrix, decision callout, revisit conditions.", tags: "pros-cons · matrix" },
+  { file: "roadmap-platform-2027h1.html", label: "Roadmap", title: "Platform Roadmap — H1 2027", blurb: "Gantt figure, milestone rail with statuses and owners, roadmap changelog.", tags: "gantt · milestones · changelog" },
+  { file: "release-notes-importer-0.3.0.html", label: "Release Notes", title: "Importer 0.3.0 — Release Notes", blurb: "Changelog rail (Added/Changed/Fixed/Removed), upgrade steps, before/after diff.", tags: "changelog · steps · diff" },
+];
+
+function makeIndex() {
+  let out = TEMPLATE.replace(CHART_TAG, "").replace(MERMAID_TAG, "");
+  out = setHeader(out, {
+    title: "Artifact Examples",
+    badge: "Index",
+    subtitle: "One sample per use case · generated 2026-11-24 · all content is sample data",
+  });
+  const card = (m) =>
+    '        <a class="example-card" href="' + m.file + '">\n' +
+    '          <div class="ec-top"><span class="ec-pill">' + m.label + '</span><i data-lucide="arrow-up-right" class="ec-icon"></i></div>\n' +
+    '          <h2>' + m.title + '</h2>\n' +
+    '          <p>' + m.blurb + '</p>\n' +
+    '          <p class="ec-tags">' + m.tags + '</p>\n' +
+    '        </a>';
+  const cards = EXAMPLE_META.map(card).join("\n");
+  const gallery = [
+    '  <style>',
+    '    /* index-only styles (scoped to .example-card) */',
+    '    .example-card { display: block; padding: 1.25rem; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); transition: border-color 120ms ease, transform 120ms ease; }',
+    '    .example-card:hover { border-color: var(--accent); transform: translateY(-2px); }',
+    '    .example-card h2 { font-size: 15px; font-weight: 600; margin: 0.6rem 0 0.4rem; }',
+    '    .example-card p { margin: 0; font-size: 13px; color: var(--text-muted); }',
+    '    .ec-top { display: flex; align-items: center; justify-content: space-between; }',
+    '    .ec-pill { font-size: 11px; font-weight: 500; padding: 0.1rem 0.55rem; border-radius: 9999px; background: var(--surface-muted); color: var(--text-muted); border: 1px solid var(--border); }',
+    '    .ec-icon { width: 14px; height: 14px; color: var(--text-muted); }',
+    '    .ec-tags { margin-top: 0.7rem !important; font-size: 11.5px !important; font-family: \'JetBrains Mono\', ui-monospace, monospace; }',
+    '  </style>',
+    '  <main class="max-w-6xl mx-auto p-6">',
+    '    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">',
+    cards,
+    '    </section>',
+    '    <p class="text-xs mt-6" style="color: var(--text-muted);">All content is sample data. Regenerate with <code>npm run make-examples</code>.</p>',
+    '  </main>',
+  ].join("\n");
+  const start = out.indexOf(START);
+  const end = out.indexOf(END) + END.length;
+  out = out.slice(0, start) + gallery + out.slice(end);
+  return out;
+}
+
+examples["index.html"] = makeIndex();
+
+/* ------------------------------------------------------------------ */
+
 mkdirSync(OUT_DIR, { recursive: true });
 let count = 0;
 for (const [name, html] of Object.entries(examples)) {
-  const isDoc = name !== "dashboard-quarterly-spend.html";
-  if (isDoc && !html.includes(FOOTER_NOTE)) throw new Error(name + ": missing source-of-truth footer");
-  if (isDoc && html.includes(START)) throw new Error(name + ": dashboard starter not replaced");
-  if (!isDoc && !html.includes("Sample Data")) throw new Error(name + ": missing Sample Data badge");
   writeFileSync(resolve(OUT_DIR, name), html);
   console.log("wrote", name, "(" + html.length + " bytes)");
   count++;
 }
-console.log("done:", count, "examples");
+
+/* index must link every example */
+const indexHtml = readFileSync(resolve(OUT_DIR, "index.html"), "utf8");
+for (const m of EXAMPLE_META) {
+  if (!indexHtml.includes('href="' + m.file + '"')) throw new Error("index.html: missing link to " + m.file);
+}
+
+/* content contracts per example */
+let validated = 0;
+for (const m of EXAMPLE_META) {
+  const html = readFileSync(resolve(OUT_DIR, m.file), "utf8");
+  const isDoc = m.file !== "dashboard-quarterly-spend.html";
+  if (isDoc && !html.includes(FOOTER_NOTE)) throw new Error(m.file + ": missing source-of-truth footer");
+  if (isDoc && html.includes(START)) throw new Error(m.file + ": dashboard starter not replaced");
+  if (!isDoc && !html.includes("Sample Data")) throw new Error(m.file + ": missing Sample Data badge");
+  validated++;
+}
+console.log("validated index links + content contracts (" + validated + " examples)");
+console.log("done:", count, "files written");
