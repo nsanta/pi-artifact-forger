@@ -1,33 +1,55 @@
 # pi-artifact-forger
 
-**Artifact generation system for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent): turn plans, reports, and data into self-contained, reviewable HTML artifacts — dashboards, diagrams, visual explainers — from one versioned design contract.**
+**Artifact generation system for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent): turn plans, reports, and data into self-contained, reviewable HTML artifacts — dashboards, specs, manuals, decision records, roadmaps — from one versioned design contract.**
 
 Extracted from `../pi-elephant-goldfish` (which uses it to make EGM plans reviewable) so any project on any machine can forge artifacts with the same design system.
 
-## What it is
+> **User guide:** [`docs/user-guide.md`](docs/user-guide.md) — everything you can ask for, everything artifacts can do, keyboard reference, printing, and maintenance.
 
-Three pieces:
+## Features
+
+**Generation** — in any pi session, in any project:
+
+- **Genre auto-detection**: dashboard, report, tech spec, product spec, decision (ADR), roadmap, manual — routed from your content's shape, overridable in the request.
+- **Ready-made structures**: release notes with version rails and diffs; migration guides with warning callouts.
+- **Per-artifact overrides**: five palettes (dusk default), light/dark, diagram look (`classic` / `handDrawn` / `neo`).
+- **Honesty by default**: invented data badged `Sample Data`, estimates badged `Estimates`, markdown stays the source of truth.
+
+**Artifacts** — single self-contained HTML files that work over `file://`:
+
+- Five palettes + light/dark with live theme sync across charts (Chart.js 4) and diagrams (Mermaid 11).
+- Fit-to-container diagrams with zoom controls, Mermaid source copy, and natural-size SVG export.
+- Document genres get a reading layout: sticky table of contents with scrollspy, `Ctrl+K` search, callouts, sortable/filterable tables, numbered figures, spec headers, steps, checklists, prereq chips, pros/cons, before/after diffs, and version rails.
+- Print/PDF styling: light values forced per palette, page-break hygiene, interactive chrome hidden.
+
+**Operations**:
+
+- Project bootstrap of the versioned design contract (`contract:artifact-forger v2`); stale templates detected, never edited — upgrade by full re-bootstrap.
+- `examples/` — one sample artifact per use case with a navigable [`index`](examples/index.html), regenerable via `npm run make-examples`.
 
 | Piece | Path | Role |
 | --- | --- | --- |
-| **Design contract** | `resources/artifact-forger/_template.html` | Single-file HTML design system: five palettes (dusk default), light/dark, Chart.js 4 + Mermaid 11 theming, zoom/copy/export diagram controls, and a self-inert Document Kit for prose genres (report, tech-spec, product-spec, manual). Versioned (`contract:artifact-forger v2`); never overwritten in target projects — upgrade by full re-bootstrap. |
-| **Agent** | `agents/artifact-forger.md` | Zero-context `artifact-forger` subagent (read/grep/write/edit/bash). Delegating generation here keeps the ~19 KB design system out of the main session's context. |
+| **Design contract** | `resources/artifact-forger/_template.html` | Single-file HTML design system: five palettes (dusk default), light/dark, Chart.js 4 + Mermaid 11 theming, zoom/copy/export diagram controls, and a self-inert Document Kit for prose genres (report, tech-spec, product-spec, manual, decision, roadmap). Versioned (`contract:artifact-forger v2`); never overwritten in target projects — upgrade by full re-bootstrap. |
+| **Agent** | `agents/artifact-forger.md` | Zero-context `artifact-forger` subagent (read/grep/write/edit/bash). Delegating generation here keeps the design system out of the main session's context. |
 | **Skill** | `skills/artifact-forger/SKILL.md` | Ships with the pi package; trigger rules + inline-generation fallback when the agent isn't installed. |
+| **User guide** | `docs/user-guide.md` | Generation phrases, genre reference, artifact features, keyboard shortcuts, printing, maintenance. |
 | **Examples** | `examples/` | One sample artifact per use case (dashboard, report, tech-spec, product-spec, manual, decision, roadmap, release notes) — see [`examples/README.md`](examples/README.md). Regenerate with `npm run make-examples`. |
 
 ## Install
 
-From npm (recommended):
-
-```sh
-pi install npm:pi-artifact-forger
-```
-
-Or straight from the git repository:
+From the git repository (works today):
 
 ```sh
 pi install git:github.com/nsanta/pi-artifact-forger
 ```
+
+Or from a local clone:
+
+```sh
+pi install ./pi-artifact-forger
+```
+
+An npm package is prepared (`files`, keywords, `pi-package` marker) but **not yet published** — once it is, `pi install npm:pi-artifact-forger` will work.
 
 Development, from a clone:
 
@@ -48,7 +70,7 @@ This copies the agent to `~/.pi/agent/agents/artifact-forger.md`, the canonical 
 
 ## Usage
 
-In any pi session, in any project:
+In any pi session, in any project — the full phrase reference lives in the [user guide](docs/user-guide.md):
 
 - *"Make a dashboard of our Q3 cloud spend"* → the session delegates to `artifact-forger`, which bootstraps `artifacts/_template.html` if the project has none, generates `artifacts/<name>.html`, and opens it in your browser. It returns just the path — no design-system context leaks into your session.
 - *"Draft a tech spec for the importer"* / *"write up this migration as a runbook"* → the agent auto-detects the genre: dense data → dashboard; work summary → report; proposal → tech-spec / product-spec; decision record → ADR-style decision layout; milestone plan → roadmap; release notes/changelog and migration guides get dedicated structures; procedure → manual. Document genres get a reading layout with TOC, callouts, tables, sortable/filterable tables, `Ctrl+K` search, print-friendly styling, and statically numbered figures; you can always force a genre in the request.
