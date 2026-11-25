@@ -59,7 +59,7 @@ describe("genre routing contract", () => {
   });
 
   it("defines the stale-template fallback without editing protected templates", () => {
-    expect(agentBody).toContain("contract:artifact-forger v2");
+    expect(agentBody).toMatch(/contract:artifact-forger v\d+/);
     expect(agentBody).toContain("inline-append");
     expect(agentBody).toContain("NEVER overwrite");
   });
@@ -82,11 +82,28 @@ describe("genre routing contract", () => {
     expect(agentBody).toContain("Ctrl+K");
   });
 
+  it("ships the batch-2 interactive registry with verified pins", () => {
+    for (const tag of [
+      "https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js",
+      "https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js",
+      "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js",
+      "https://cdn.jsdelivr.net/npm/cytoscape@3.28.0/dist/cytoscape.min.js",
+    ]) {
+      expect(agentBody).toContain(tag);
+    }
+    expect(agentBody).toContain("simulation");
+    expect(agentBody).toContain("WEBGL_SCENES");
+    expect(agentBody).toContain("onParams(values, panel)");
+    expect(agentBody).toContain("pure computation: no DOM, no network");
+    expect(agentBody).toContain("prefer the lighter one");
+  });
+
   it("skill mirrors the batch-1 additions compactly", () => {
     expect(skillBody).toContain("decision");
     expect(skillBody).toContain("roadmap");
     expect(skillBody).toContain("release notes");
     expect(skillBody).toContain("Ctrl+K");
+    expect(skillBody).toMatch(/contract:artifact-forger v\d+/);
   });
 
   it("skill mirrors genres compactly and defers to the agent file", () => {
@@ -94,7 +111,7 @@ describe("genre routing contract", () => {
       expect(skillBody).toContain(marker);
     }
     expect(skillBody).toContain("source of truth");
-    expect(skillBody).toContain("contract:artifact-forger v2");
+    expect(skillBody).toMatch(/contract:artifact-forger v\d+/);
   });
 });
 

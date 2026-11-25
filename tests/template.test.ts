@@ -54,7 +54,7 @@ describe("document kit contract", () => {
   const count = (haystack: string, needle: string) => haystack.split(needle).length - 1;
 
   it("marks the contract version and delimits both layout blocks exactly once", () => {
-    expect(count(template, "contract:artifact-forger v2")).toBe(1);
+    expect(count(template, "contract:artifact-forger v3")).toBe(1);
     expect(count(template, "<!-- GENRE:DASHBOARD STARTER -->")).toBe(1);
     expect(count(template, "<!-- /GENRE:DASHBOARD STARTER -->")).toBe(1);
     expect(count(template, "<!-- GENRE:DOCUMENT KIT -->")).toBe(1);
@@ -98,6 +98,29 @@ describe("document kit contract", () => {
       .slice(kit.indexOf("<style>"), kit.indexOf("</style>"))
       .replace(/\/\*[\s\S]*?\*\//g, "");
     expect(css).not.toMatch(/#[0-9a-fA-F]{3}\b|#[0-9a-fA-F]{6}\b/);
+  });
+
+  it("ships batch-3 interactive vocabulary with library guards", () => {
+    for (const marker of [
+      ".webgl-stage",
+      ".param-panel",
+      ".sm-sim",
+      ".graph-stage",
+      ".ba-slider",
+      ".col-menu",
+      ".playground-output",
+      "--syntax-1",
+      "theme:change",
+      "typeof THREE === 'undefined'",
+      "typeof hljs !== 'undefined'",
+      "typeof cytoscape === 'undefined'",
+      "webglcontextlost",
+      "worker.terminate()",
+    ]) {
+      expect(kit).toContain(marker);
+    }
+    // M1: no parallel syntax color pipeline — highlighting reads token vars
+    expect(kit).toContain("pre.doc-code[data-lang] .hljs-keyword");
   });
 
   it("ships print mode in the shared region with a persistence bypass", () => {

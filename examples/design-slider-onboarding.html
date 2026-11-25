@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <!-- contract:artifact-forger v3 -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artifact Template</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Pinned file://-safe UMD CDNs -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f8f8f6;
+      --surface: #ffffff;
+      --surface-muted: #f0efe9;
+      --border: #e2e0d8;
+      --text: #18181b;
+      --text-muted: #57534e;
+      --accent: #003f5c;
+      --accent-fg: #ffffff;
+      --grid-line: rgba(120, 113, 108, 0.18);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background-color 160ms ease, color 160ms ease;
+    }
+
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: background-color 160ms ease, border-color 160ms ease;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.65rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background-color: var(--surface-muted);
+      color: var(--text);
+      cursor: pointer;
+      transition: opacity 120ms ease, border-color 120ms ease;
+    }
+    .btn:hover { opacity: 0.85; }
+
+    .diagram-stage {
+      background-color: var(--surface-muted);
+      background-image: radial-gradient(var(--border) 1px, transparent 1px);
+      background-size: 16px 16px;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+    }
+
+    /* ============================================================
+     * PRINT-MODE — shared print styling for every genre.
+     * Contract scoping exemption: bare element selectors are allowed
+     * ONLY inside this @media print block. Light tokens arrive via the
+     * --print-* twins set by applyTheme (per-palette light values).
+     * ============================================================ */
+    @media print {
+      :root {
+        --bg: var(--print-bg) !important;
+        --surface: var(--print-surface) !important;
+        --surface-muted: var(--print-surface-muted) !important;
+        --border: var(--print-border) !important;
+        --text: var(--print-text) !important;
+        --text-muted: var(--print-text-muted) !important;
+        --accent: var(--print-accent) !important;
+        --grid-line: var(--print-grid-line) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      body { background: var(--bg) !important; }
+      header select, header button, .btn, .table-filter, .doc-search { display: none !important; }
+      main .grid { display: block; }
+      main .grid > * { margin-bottom: 1.25rem; }
+      h2, h3 { break-after: avoid; }
+      figure, .callout, .spec-meta, .doc-table tr, ol.steps li, ul.checklist li,
+      .milestone, .diff-pair, .changelog-list li { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased">
+
+  <!-- Sticky Header -->
+  <header class="sticky top-0 z-20 border-b backdrop-blur-md" style="border-color: var(--border); background: color-mix(in srgb, var(--surface) 88%, transparent);">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-base font-semibold tracking-tight truncate">Onboarding Redesign — Before / After</h1>
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background: var(--surface-muted); color: var(--text-muted); border: 1px solid var(--border);">Report</span>
+        </div>
+        <p class="text-xs truncate" style="color: var(--text-muted);">Growth team · 2026-11-25 · drag the divider — sample mock screens</p>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <select id="palette-select" aria-label="Color palette" class="btn pr-6 outline-none">
+          <option value="dusk">Dusk Spectrum</option>
+          <option value="editorial">Editorial Paper</option>
+          <option value="nordic">Nordic Mineral</option>
+          <option value="okabe">Okabe-Ito Refined</option>
+          <option value="botanical">Botanical Ink</option>
+        </select>
+
+        <button id="theme-toggle" class="btn" title="Toggle light/dark mode">
+          <i id="theme-icon" data-lucide="moon" class="w-3.5 h-3.5"></i>
+          <span id="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">Onboarding Redesign — Before / After</p>
+      <h2>Comparison</h2>
+      <p>Drag the divider (or focus it and use the arrow keys) to compare the legacy empty state with the guided sample project.</p>
+      <div class="ba-slider" style="min-height: 16rem;">
+        <div class="ba-pane ba-before">
+          <span class="pane-label">Before</span>
+          <div style="border: 1px dashed var(--border); border-radius: 0.5rem; padding: 2.5rem 1.5rem; text-align: center; color: var(--text-muted); font-size: 13px;">Empty workspace — "No data yet."</div>
+        </div>
+        <div class="ba-pane ba-after">
+          <span class="pane-label">After</span>
+          <div style="border: 1px solid var(--accent); border-radius: 0.5rem; padding: 2.5rem 1.5rem; text-align: center; font-size: 13px; background: var(--surface-muted);">Guided sample project — first value in ~8 minutes</div>
+        </div>
+        <div class="ba-handle" role="slider" tabindex="0" aria-label="Compare before and after" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>
+      </div>
+      <h2>What changed</h2>
+      <ul>
+        <li>Empty state replaced by a seeded sample project.</li>
+        <li>Checklist nudge appears only after the first dead-end.</li>
+      </ul>
+      <div class="doc-footer">Markdown remains the source of truth — this artifact is a projection for review.</div>
+    </article>
+  </div>
+
+
+  <script>
+    /* ============================================================
+     * 1. DESIGN SYSTEM & PALETTE REGISTRY
+     * ============================================================ */
+    const DEFAULT_PALETTE = 'dusk'; // dusk | editorial | nordic | okabe | botanical
+    const DEFAULT_MODE = 'light';   // light | dark
+
+    const THEMES = {
+      dusk: {
+        name: 'Dusk Spectrum',
+        light: {
+          bg: '#f8f8f6', surface: '#ffffff', surfaceMuted: '#f0efe9', border: '#e2e0d8',
+          text: '#18181b', textMuted: '#57534e', accent: '#003f5c', gridLine: 'rgba(120,113,108,0.18)',
+          mermaidFill: '#eef4f7', mermaidSecondary: '#f6f3f9',
+          series: ['#003f5c', '#58508d', '#bc5090', '#ff6361', '#ffa600']
+        },
+        dark: {
+          bg: '#18181a', surface: '#222225', surfaceMuted: '#2c2c30', border: '#36363b',
+          text: '#f4f4f5', textMuted: '#a1a1aa', accent: '#ff6361', gridLine: 'rgba(161,161,170,0.16)',
+          mermaidFill: '#1e2c35', mermaidSecondary: '#2a2738',
+          series: ['#2c7da0', '#847cc4', '#d46ca9', '#ff7b79', '#ffb733']
+        }
+      },
+      editorial: {
+        name: 'Editorial Paper',
+        light: {
+          bg: '#faf8f5', surface: '#ffffff', surfaceMuted: '#f2eee7', border: '#e5dfd3',
+          text: '#1c1917', textMuted: '#635c55', accent: '#1b4965', gridLine: 'rgba(99,92,85,0.16)',
+          mermaidFill: '#edf4f8', mermaidSecondary: '#fbf3ef',
+          series: ['#1b4965', '#5fa8d3', '#3d8b7d', '#e07a5f', '#e9b85b']
+        },
+        dark: {
+          bg: '#1c1a17', surface: '#26231f', surfaceMuted: '#302c27', border: '#3d3832',
+          text: '#f5f2ec', textMuted: '#a8a29e', accent: '#e07a5f', gridLine: 'rgba(168,162,158,0.15)',
+          mermaidFill: '#1f303c', mermaidSecondary: '#362823',
+          series: ['#4a8bb2', '#7cc0e6', '#56b0a0', '#ea9279', '#f0c774']
+        }
+      },
+      nordic: {
+        name: 'Nordic Mineral',
+        light: {
+          bg: '#f6f8f9', surface: '#ffffff', surfaceMuted: '#ebf0f2', border: '#dce4e8',
+          text: '#142026', textMuted: '#586b75', accent: '#264653', gridLine: 'rgba(88,107,117,0.16)',
+          mermaidFill: '#eaf1f3', mermaidSecondary: '#edf6f5',
+          series: ['#264653', '#457b9d', '#2a9d8f', '#d98c5f', '#9b6a82']
+        },
+        dark: {
+          bg: '#14181c', surface: '#1d2329', surfaceMuted: '#262e36', border: '#323d47',
+          text: '#eef2f5', textMuted: '#94a6b3', accent: '#2a9d8f', gridLine: 'rgba(148,166,179,0.15)',
+          mermaidFill: '#1d2f36', mermaidSecondary: '#1c3330',
+          series: ['#4e7d91', '#6ba0c2', '#42baa9', '#e6a37c', '#ba89a1']
+        }
+      },
+      okabe: {
+        name: 'Okabe-Ito Refined',
+        light: {
+          bg: '#fafafa', surface: '#ffffff', surfaceMuted: '#f0f0f2', border: '#e1e1e6',
+          text: '#141417', textMuted: '#5c5c66', accent: '#0072b2', gridLine: 'rgba(92,92,102,0.16)',
+          mermaidFill: '#ebf4fa', mermaidSecondary: '#eaf7f3',
+          series: ['#0072b2', '#009e73', '#e69f00', '#cc79a7', '#d55e00']
+        },
+        dark: {
+          bg: '#161618', surface: '#202024', surfaceMuted: '#2a2a30', border: '#36363e',
+          text: '#f4f4f7', textMuted: '#a0a0ad', accent: '#38a1db', gridLine: 'rgba(160,160,173,0.15)',
+          mermaidFill: '#172d3b', mermaidSecondary: '#16332b',
+          series: ['#38a1db', '#2bc299', '#f5b324', '#de93bd', '#f07b26']
+        }
+      },
+      botanical: {
+        name: 'Botanical Ink',
+        light: {
+          bg: '#f8f9fa', surface: '#ffffff', surfaceMuted: '#eef1f0', border: '#dde3e1',
+          text: '#161d1b', textMuted: '#566360', accent: '#1f6f78', gridLine: 'rgba(86,99,96,0.16)',
+          mermaidFill: '#eaf4f5', mermaidSecondary: '#f1f0f8',
+          series: ['#1f6f78', '#6c63a6', '#5b8c5a', '#d4a03c', '#d1603d']
+        },
+        dark: {
+          bg: '#141518', surface: '#1e2024', surfaceMuted: '#272a30', border: '#343840',
+          text: '#f1f3f5', textMuted: '#9aa3ad', accent: '#3ca3ae', gridLine: 'rgba(154,163,173,0.15)',
+          mermaidFill: '#1a2f33', mermaidSecondary: '#272438',
+          series: ['#3ca3ae', '#8f87c9', '#7bb079', '#e5b657', '#e37e5e']
+        }
+      }
+    };
+
+    const state = {
+      palette: localStorage.getItem('artifact-palette') || DEFAULT_PALETTE,
+      mode: localStorage.getItem('artifact-mode') || DEFAULT_MODE,
+      zoom: { main: 1 },  // user zoom multiplier relative to fit: 1 (100%) = fit-to-container
+      fit: {},            // per-diagram fit scale: natural size vs stage box
+      natural: {}         // per-diagram natural { w, h } from the mermaid viewBox
+    };
+
+    if (!THEMES[state.palette]) state.palette = DEFAULT_PALETTE;
+
+    function getActiveTheme() {
+      return THEMES[state.palette][state.mode];
+    }
+
+    /* ============================================================
+     * 2. MERMAID DIAGRAMS & CONTROLS
+     * ============================================================ */
+    const MERMAID_DIAGRAMS = {
+      main: `
+        flowchart LR
+          A([User Prompt]) --> B[Load _template.html]
+          B --> C{Artifact Type}
+          C -->|Metrics| D[Chart.js 4]
+          C -->|Systems| E[Mermaid 11]
+          D --> F[Save ./artifacts/*.html]
+          E --> F
+          F --> G([Auto-Open Browser])
+      `
+    };
+
+    async function renderAllMermaid() {
+      if (typeof mermaid === 'undefined') return;
+      const t = getActiveTheme();
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'base',
+        securityLevel: 'loose',
+        themeVariables: {
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: '13px',
+          primaryColor: t.mermaidFill,
+          primaryTextColor: t.text,
+          primaryBorderColor: t.series[0],
+          secondaryColor: t.mermaidSecondary,
+          secondaryTextColor: t.text,
+          secondaryBorderColor: t.series[1],
+          tertiaryColor: t.surfaceMuted,
+          tertiaryTextColor: t.text,
+          tertiaryBorderColor: t.series[4],
+          lineColor: t.textMuted,
+          textColor: t.text,
+          edgeLabelBackground: t.surface,
+          clusterBkg: t.surface,
+          clusterBorder: t.border
+        }
+      });
+
+      for (const [id, src] of Object.entries(MERMAID_DIAGRAMS)) {
+        const el = document.getElementById(`mermaid-${id}`);
+        if (!el) continue;
+        const { svg } = await mermaid.render(`svg-${id}-${Date.now()}`, src.trim());
+        el.innerHTML = svg;
+        /* kit functions may be absent on dashboards that stripped the kit */
+        if (typeof measureDiagram === 'function' && typeof applyDiagramSize === 'function') {
+          measureDiagram(id);
+          applyDiagramSize(id);
+        }
+      }
+    }
+
+    function measureDiagram(id) {
+      const svg = document.querySelector(`#mermaid-${id} svg`);
+      if (!svg) return;
+      const box = svg.getBoundingClientRect();
+      const vb = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+      state.natural[id] = {
+        w: vb.length === 4 && vb[2] > 0 ? vb[2] : box.width || 300,
+        h: vb.length === 4 && vb[3] > 0 ? vb[3] : box.height || 150
+      };
+    }
+
+    /* Fit baseline: "100%" adapts to the diagram's natural size, so wide or
+       small diagrams fill the stage instead of floating tiny in empty space.
+       Upscale is capped so tiny diagrams don't blow up absurdly; oversized
+       diagrams downscale to fit fully. */
+    function computeFit(id) {
+      const stage = document.getElementById(`mermaid-${id}`)?.closest('.diagram-stage');
+      const nat = state.natural[id];
+      if (!stage || !nat) return 1;
+      const availW = Math.max(0, stage.clientWidth - 32);  // p-4 on both sides
+      const availH = Math.max(0, stage.clientHeight - 32);
+      return Math.min(Math.min(availW / nat.w, availH / nat.h), 2.5);
+    }
+
+    function applyDiagramSize(id) {
+      const svg = document.querySelector(`#mermaid-${id} svg`);
+      const nat = state.natural[id];
+      if (!svg || !nat) return;
+      state.fit[id] = computeFit(id);
+      const scale = (state.zoom[id] || 1) * state.fit[id];
+      // explicit pixel size: overrides mermaid's width:100%/max-width, which
+      // collapses to the browser's 300x150 default inside a flex wrapper
+      svg.style.maxWidth = 'none';
+      svg.style.width = `${Math.round(nat.w * scale)}px`;
+      svg.style.height = `${Math.round(nat.h * scale)}px`;
+    }
+
+    function zoomDiagram(id, delta) {
+      state.zoom[id] = delta === 0 ? 1 : Math.min(3, Math.max(0.4, (state.zoom[id] || 1) + delta));
+      applyDiagramSize(id);
+    }
+
+    let fitRaf = 0;
+    function reapplyAll() {
+      cancelAnimationFrame(fitRaf);
+      fitRaf = requestAnimationFrame(() => {
+        for (const id of Object.keys(MERMAID_DIAGRAMS)) applyDiagramSize(id);
+      });
+    }
+    window.addEventListener('resize', reapplyAll);
+    /* belt-and-suspenders: re-fit once everything (fonts, CDNs) has settled,
+       in case the first fit measured a still-shifting layout */
+    if (document.readyState === 'complete') reapplyAll();
+    else window.addEventListener('load', reapplyAll);
+
+    async function copyMermaid(id, btn) {
+      const src = MERMAID_DIAGRAMS[id]?.trim();
+      if (!src) return;
+      await navigator.clipboard.writeText(src);
+      const label = btn.querySelector('span');
+      const prev = label.textContent;
+      label.textContent = 'Copied';
+      setTimeout(() => (label.textContent = prev), 1200);
+    }
+
+    function downloadSvg(id, filename) {
+      const svg = document.querySelector(`#mermaid-${id} svg`);
+      if (!svg) return;
+      // export at the diagram's natural size, not the on-screen fitted zoom
+      const out = svg.cloneNode(true);
+      out.style.maxWidth = '';
+      out.style.width = '';
+      out.style.height = '';
+      const nat = state.natural[id];
+      if (nat) {
+        out.setAttribute('width', nat.w);
+        out.setAttribute('height', nat.h);
+      }
+      const blob = new Blob([out.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /* ============================================================
+     * 3. CHART.JS REGISTRY & DYNAMIC RE-THEMING
+     * ============================================================ */
+    const charts = [];
+
+    function initCharts() {
+      const t = getActiveTheme();
+      const ctx = document.getElementById('sample-chart');
+      if (!ctx || typeof Chart === 'undefined') return;
+
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+          datasets: [
+            { label: 'Core Platform', data: [64, 78, 86, 94], _colorIdx: 0, backgroundColor: t.series[0], borderRadius: 6 },
+            { label: 'Automation',    data: [38, 52, 61, 75], _colorIdx: 2, backgroundColor: t.series[2], borderRadius: 6 },
+            { label: 'Analytics',     data: [22, 31, 45, 58], _colorIdx: 4, backgroundColor: t.series[4], borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: t.textMuted, boxWidth: 12, usePointStyle: true } },
+            tooltip: { backgroundColor: t.surface, titleColor: t.text, bodyColor: t.textMuted, borderColor: t.border, borderWidth: 1 }
+          },
+          scales: {
+            x: { ticks: { color: t.textMuted }, grid: { display: false } },
+            y: { ticks: { color: t.textMuted }, grid: { color: t.gridLine }, border: { display: false } }
+          }
+        }
+      });
+
+      charts.push(chart);
+    }
+
+    function updateChartsTheme() {
+      const t = getActiveTheme();
+      charts.forEach((chart) => {
+        chart.data.datasets.forEach((ds, i) => {
+          const idx = ds._colorIdx ?? (i % t.series.length);
+          const color = t.series[idx % t.series.length];
+          if (Array.isArray(ds.backgroundColor)) {
+            ds.backgroundColor = ds.data.map((_, j) => t.series[j % t.series.length]);
+          } else {
+            ds.backgroundColor = color;
+          }
+          if (ds.borderColor) ds.borderColor = color;
+        });
+
+        if (chart.options.scales) {
+          Object.values(chart.options.scales).forEach((scale) => {
+            if (scale.ticks) scale.ticks.color = t.textMuted;
+            if (scale.grid && scale.grid.display !== false) scale.grid.color = t.gridLine;
+          });
+        }
+        if (chart.options.plugins?.legend?.labels) {
+          chart.options.plugins.legend.labels.color = t.textMuted;
+        }
+        if (chart.options.plugins?.tooltip) {
+          Object.assign(chart.options.plugins.tooltip, {
+            backgroundColor: t.surface, titleColor: t.text, bodyColor: t.textMuted, borderColor: t.border
+          });
+        }
+        chart.update('none');
+      });
+    }
+
+    /* ============================================================
+     * 4. APPLY THEME & BIND UI CONTROLS
+     * ============================================================ */
+    function renderSwatchStrip() {
+      const t = getActiveTheme();
+      const strip = document.getElementById('swatch-strip');
+      const label = document.getElementById('swatch-label');
+      if (!strip) return;
+      strip.innerHTML = t.series.map((hex) =>
+        `<span title="${hex}" class="h-5 flex-1 rounded" style="background:${hex}"></span>`
+      ).join('');
+      if (label) label.textContent = `${THEMES[state.palette].name} (${state.mode})`;
+    }
+
+    function applyTheme() {
+      const t = getActiveTheme();
+      const root = document.documentElement;
+      root.setAttribute('data-theme', state.mode);
+
+      const vars = {
+        '--bg': t.bg,
+        '--surface': t.surface,
+        '--surface-muted': t.surfaceMuted,
+        '--border': t.border,
+        '--text': t.text,
+        '--text-muted': t.textMuted,
+        '--accent': t.accent,
+        '--grid-line': t.gridLine
+      };
+      Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+
+      /* Print twins: light values of the active palette, consumed by the
+         PRINT-MODE @media block. Keeps printed chrome light per palette,
+         snapshot-safe (no JS timing involved). */
+      const lightTheme = THEMES[state.palette].light;
+      const printVars = {
+        '--print-bg': lightTheme.bg,
+        '--print-surface': lightTheme.surface,
+        '--print-surface-muted': lightTheme.surfaceMuted,
+        '--print-border': lightTheme.border,
+        '--print-text': lightTheme.text,
+        '--print-text-muted': lightTheme.textMuted,
+        '--print-accent': lightTheme.accent,
+        '--print-grid-line': lightTheme.gridLine
+      };
+      Object.entries(printVars).forEach(([k, v]) => root.style.setProperty(k, v));
+
+      /* Syntax palette (batch 2): five hues from the active palette's series,
+         consumed by hljs class styling in the kit (M1 — no separate pipeline). */
+      t.series.slice(0, 5).forEach((hex, i) => root.style.setProperty(`--syntax-${i + 1}`, hex));
+      document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme: t, mode: state.mode } }));
+
+      localStorage.setItem('artifact-palette', state.palette);
+      localStorage.setItem('artifact-mode', state.mode);
+
+      document.getElementById('palette-select').value = state.palette;
+      document.getElementById('theme-label').textContent = state.mode === 'dark' ? 'Light' : 'Dark';
+
+      const icon = document.getElementById('theme-icon');
+      icon.setAttribute('data-lucide', state.mode === 'dark' ? 'sun' : 'moon');
+      lucide.createIcons();
+
+      renderSwatchStrip();
+      updateChartsTheme();
+      renderAllMermaid();
+    }
+
+    document.getElementById('palette-select').addEventListener('change', (e) => {
+      state.palette = e.target.value;
+      applyTheme();
+    });
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      state.mode = state.mode === 'dark' ? 'light' : 'dark';
+      applyTheme();
+    });
+
+    /* PRINT-MODE:BEGIN — shared print handlers (self-inert; snapshot-safe
+       light forcing with persistence bypass: the user's dark preference
+       survives the print job, restore reads memory not localStorage). */
+    (function () {
+      let printRestoreMode = null;
+      window.addEventListener('beforeprint', () => {
+        if (state.mode !== 'dark') return;
+        printRestoreMode = 'dark';
+        state.mode = 'light';
+        applyTheme(); /* also kicks chart re-theme + mermaid re-render (best-effort) */
+        localStorage.setItem('artifact-mode', 'dark');
+      });
+      window.addEventListener('afterprint', () => {
+        if (printRestoreMode === 'dark') {
+          printRestoreMode = null;
+          state.mode = 'dark';
+          applyTheme();
+        }
+      });
+    })();
+    /* PRINT-MODE:END */
+
+    // Boot — deferred until the whole document (including the Document Kit
+    // <style>/<script>) is parsed, so diagram fitting measures the final
+    // layout instead of an unstyled intermediate state.
+    function bootShared() {
+      initCharts();
+      applyTheme();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootShared);
+    } else {
+      bootShared();
+    }
+  </script>
+
+  <!-- GENRE:DOCUMENT KIT -->
+  <!-- Self-inert document layout for prose genres (report / tech-spec / product-spec / manual).
+       All CSS is scoped under .doc; all JS no-ops unless a .doc element exists.
+       Dashboard artifacts may strip this whole block (optional byte-saving, never required).
+       See design_draft.md §2 for the inertness, marker-collision, and stale-template contracts. -->
+  <style>
+    /* ---- document layout (all rules .doc-scoped) ---- */
+    .doc {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 2.5rem;
+      max-width: 76rem;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 3rem;
+    }
+    .doc-toc {
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow: auto;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+    .doc-toc .toc-title {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .doc-toc ol { list-style: none; margin: 0; padding: 0; }
+    .doc-toc ol ol { padding-left: 0.85rem; }
+    .doc-toc a {
+      display: block;
+      padding: 0.2rem 0.5rem;
+      border-left: 2px solid transparent;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 0 0.25rem 0.25rem 0;
+    }
+    .doc-toc a:hover { color: var(--text); background: var(--surface-muted); }
+    .doc-toc a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+    .doc-body {
+      max-width: 46rem;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      min-width: 0;
+    }
+    .doc-body > h2 { font-size: 17px; line-height: 24px; font-weight: 600; margin: 2.25rem 0 0.75rem; scroll-margin-top: 5rem; }
+    .doc-body > h2:first-child { margin-top: 0; }
+    .doc-body > h3 { font-size: 14px; line-height: 20px; font-weight: 600; margin: 1.75rem 0 0.5rem; scroll-margin-top: 5rem; }
+    .doc-body .doc-display { font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 1rem; }
+    .doc-body > h1 { font-size: 22px; line-height: 28px; font-weight: 600; margin: 2rem 0 0.75rem; }
+    .doc-body p, .doc-body ul, .doc-body ol, .doc-body blockquote { margin: 0 0 1rem; }
+    .doc-body ul, .doc-body ol:not(.steps) { padding-left: 1.4rem; }
+    .doc-body li + li { margin-top: 0.3rem; }
+    .doc-body strong { font-weight: 600; }
+    .doc-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+    .doc-body code {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-variant-numeric: tabular-nums;
+      font-size: 87%;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      padding: 0.05rem 0.3rem;
+    }
+    .doc-body pre.doc-code {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.9rem 1rem;
+      overflow-x: auto;
+      font-size: 12.5px;
+      line-height: 1.6;
+      margin: 0 0 1.25rem;
+    }
+    .doc-body pre.doc-code code { background: none; border: none; padding: 0; font-size: inherit; }
+    .doc .doc-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 0 0 1.25rem; }
+    .doc .doc-table th {
+      text-align: left;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      padding: 0.4rem 0.75rem;
+    }
+    .doc .doc-table td { border-bottom: 1px solid var(--border); padding: 0.5rem 0.75rem; vertical-align: top; }
+    .doc .doc-table td.num, .doc .doc-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .doc .callout {
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0.5rem;
+      padding: 0.75rem 0.9rem;
+      margin: 0 0 1.25rem;
+      font-size: 13.5px;
+    }
+    .doc .callout i, .doc .callout svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 0.15rem; color: var(--accent); }
+    .doc .callout .callout-label {
+      display: block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.15rem;
+    }
+    .doc figure.doc-figure { margin: 0 0 1.5rem; }
+    .doc figure.doc-figure .diagram-stage { min-height: 12rem; }
+    .doc figure.doc-figure figcaption {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 0.5rem 0.25rem 0;
+      text-align: center;
+    }
+    .doc .spec-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+      gap: 0.75rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.9rem 1.1rem;
+      margin: 0 0 2rem;
+      font-size: 12.5px;
+    }
+    .doc .spec-meta dt {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .doc .spec-meta dd { margin: 0.1rem 0 0; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .doc ol.steps { list-style: none; counter-reset: step; padding-left: 0; margin: 0 0 1.5rem; }
+    .doc ol.steps > li { counter-increment: step; position: relative; padding-left: 2.6rem; padding-bottom: 1.1rem; }
+    .doc ol.steps > li:last-child { padding-bottom: 0; }
+    .doc ol.steps > li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0.1rem;
+      width: 1.55rem;
+      height: 1.55rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.6875rem;
+      font-weight: 600;
+    }
+    .doc ol.steps > li.is-done::before { content: "\2713"; background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+    .doc ol.steps > li.is-current::before { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+    .doc ol.steps > li.is-current::after {
+      content: "";
+      position: absolute;
+      left: 0.75rem;
+      top: 1.9rem;
+      bottom: -0.15rem;
+      width: 2px;
+      background: var(--accent);
+      opacity: 0.35;
+    }
+    .doc ul.checklist { list-style: none; padding-left: 0; }
+    .doc ul.checklist li { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.25rem 0; }
+    .doc ul.checklist input[type="checkbox"] { accent-color: var(--accent); flex-shrink: 0; transform: translateY(0.1rem); }
+    .doc .prereq {
+      display: inline-flex;
+      gap: 0.35rem;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--text);
+      border-radius: 9999px;
+      padding: 0.15rem 0.6rem;
+      margin: 0 0.35rem 0.35rem 0;
+    }
+    .doc .prereq i, .doc .prereq svg { width: 12px; height: 12px; color: var(--text-muted); }
+    .doc .doc-footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    /* ---- batch 1 vocabulary: tables / search / decision / roadmap / diffs ---- */
+    .doc .doc-table th[tabindex] { cursor: pointer; user-select: none; }
+    .doc .doc-table th[aria-sort="ascending"]::after { content: " \25B2"; font-size: 9px; }
+    .doc .doc-table th[aria-sort="descending"]::after { content: " \25BC"; font-size: 9px; }
+    .doc .table-filter {
+      width: 100%;
+      max-width: 16rem;
+      margin-bottom: 0.6rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 12.5px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .doc .table-filter:focus { border-color: var(--accent); }
+    .doc-search { position: fixed; inset: 0; z-index: 50; display: none; }
+    .doc-search.open { display: block; }
+    .doc-search .search-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); }
+    .doc-search .search-panel {
+      position: relative;
+      max-width: 34rem;
+      margin: 12vh auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+    .doc-search .search-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      padding: 0.8rem 1rem;
+      font-size: 14px;
+      font-family: inherit;
+      border-bottom: 1px solid var(--border);
+    }
+    .doc-search .search-results { max-height: 50vh; overflow: auto; margin: 0; padding: 0.3rem; list-style: none; }
+    .doc-search .search-results a {
+      display: block;
+      padding: 0.45rem 0.7rem;
+      border-radius: 0.4rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .doc-search .search-results a:hover,
+    .doc-search .search-results a.selected { background: var(--surface-muted); }
+    .doc-search .search-results .snippet { display: block; font-size: 11.5px; color: var(--text-muted); }
+    .doc-search .search-empty { padding: 0.8rem 1rem; font-size: 12.5px; color: var(--text-muted); }
+    .doc .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0 0 1.25rem; }
+    .doc .pros-cons > div {
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.7rem 0.9rem;
+      background: var(--surface);
+      font-size: 13.5px;
+    }
+    .doc .pros-cons h4 {
+      margin: 0 0 0.4rem;
+      font-size: 0.6875rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .doc .pros-cons ul { margin: 0; padding-left: 1.1rem; }
+    .doc .milestone { position: relative; border-left: 2px solid var(--border); padding: 0 0 1.5rem 1.4rem; }
+    .doc .milestone::before {
+      content: "";
+      position: absolute;
+      left: -0.42rem;
+      top: 0.3rem;
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 9999px;
+      background: var(--surface-muted);
+      border: 2px solid var(--border);
+    }
+    .doc .milestone.is-done::before { background: var(--accent); border-color: var(--accent); }
+    .doc .milestone.is-current::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 0.22rem var(--surface-muted); }
+    .doc .milestone:last-child { padding-bottom: 0.25rem; }
+    .doc .milestone h3 { margin: 0 0 0.3rem; font-size: 14px; line-height: 20px; font-weight: 600; }
+    .doc .milestone .ms-meta {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0 0 0.5rem;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .doc .ms-date, .doc .cl-version {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    .doc .diff-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0 0 1.25rem; }
+    .doc .diff-pair pre.doc-code { margin: 0; }
+    .doc .diff-pair .diff-label {
+      display: block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .doc pre.doc-code del,
+    .doc pre.doc-code ins { display: block; text-decoration: none; border-left: 2px solid var(--border); padding-left: 0.45rem; }
+    .doc pre.doc-code del { color: var(--text-muted); text-decoration: line-through; }
+    .doc pre.doc-code del::before { content: "\2212  "; }
+    .doc pre.doc-code ins { border-left-color: var(--accent); }
+    .doc pre.doc-code ins::before { content: "+ "; color: var(--accent); font-weight: 600; }
+    .doc .changelog-list { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+    .doc .changelog-list > li { border-left: 2px solid var(--border); padding: 0 0 1.1rem 1.4rem; position: relative; }
+    .doc .changelog-list > li:last-child { padding-bottom: 0; }
+    .doc .changelog-list .cl-version { font-weight: 600; margin-right: 0.5rem; }
+    .doc .changelog-list .cl-date { font-size: 12px; color: var(--text-muted); }
+    .doc .changelog-list ul { margin: 0.4rem 0 0; padding-left: 1.2rem; font-size: 13.5px; }
+    /* ---- batch 3 vocabulary: webgl / params / playground / sm-sim / graph / dataset / ba-slider ---- */
+    .doc .webgl-stage { position: relative; height: 22rem; border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; background: var(--surface-muted); margin: 0 0 1.25rem; }
+    .doc .webgl-stage canvas { display: block; width: 100%; height: 100%; }
+    .doc .webgl-stage .stage-controls { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.4rem; z-index: 2; }
+    .doc .webgl-fallback { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); font-size: 13px; margin: 0; padding: 1rem; }
+    .doc .webgl-stage.no-webgl .webgl-fallback { display: flex; }
+    .doc .param-panel { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.85rem 1rem; margin: 0 0 1.25rem; font-size: 13px; }
+    .doc .param-panel label { display: flex; align-items: center; gap: 0.5rem; }
+    .doc .param-panel input[type="range"] { accent-color: var(--accent); width: 9rem; }
+    .doc .param-panel input[type="checkbox"] { accent-color: var(--accent); }
+    .doc .param-value { font-family: 'JetBrains Mono', ui-monospace, monospace; min-width: 2.75rem; }
+    .doc .code-bar { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; margin: 0 0 0.25rem; }
+    .doc .code-name { font-size: 11px; font-weight: 500; color: var(--text-muted); font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .doc .code-copy { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .doc .code-copy:hover { color: var(--text); }
+    .doc pre.doc-code[data-lang] .hljs-keyword { color: var(--syntax-1); }
+    .doc pre.doc-code[data-lang] .hljs-string, .doc pre.doc-code[data-lang] .hljs-attr { color: var(--syntax-3); }
+    .doc pre.doc-code[data-lang] .hljs-number, .doc pre.doc-code[data-lang] .hljs-literal { color: var(--syntax-4); }
+    .doc pre.doc-code[data-lang] .hljs-comment { color: var(--text-muted); font-style: italic; }
+    .doc pre.doc-code[data-lang] .hljs-title, .doc pre.doc-code[data-lang] .hljs-function { color: var(--syntax-2); }
+    .doc .playground-buttons { display: flex; gap: 0.5rem; }
+    .doc pre.playground-output { background: var(--surface); border: 1px dashed var(--border); border-radius: 0.5rem; padding: 0.7rem 0.9rem; font-size: 12.5px; white-space: pre-wrap; margin: 0 0 1.25rem; min-height: 2.4rem; color: var(--text); }
+    .doc .sm-sim { border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface); padding: 0.9rem 1rem; margin: 0 0 1.25rem; font-size: 13.5px; }
+    .doc .sm-sim .sm-state-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .doc .sm-sim .sm-current { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; }
+    .doc .sm-sim .sm-events { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+    .doc .sm-sim .sm-log { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 0.5rem; }
+    .doc .graph-stage { height: 24rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface); margin: 0 0 1.25rem; }
+    .doc .graph-fallback, .doc .webgl-stage .graph-fallback { color: var(--text-muted); font-size: 13px; margin: 0; padding: 1rem; }
+    .doc .col-menu { font-size: 12.5px; margin-bottom: 0.5rem; border: 1px solid var(--border); border-radius: 0.375rem; background: var(--surface); padding: 0.35rem 0.6rem; }
+    .doc .col-menu summary { cursor: pointer; color: var(--text-muted); }
+    .doc .col-menu label { margin-right: 0.9rem; white-space: nowrap; }
+    .doc .col-menu input { accent-color: var(--accent); }
+    .doc tfoot.doc-summary td { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--text-muted); border-top: 2px solid var(--border); }
+    .doc .ba-slider { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 0.5rem; margin: 0 0 1.25rem; user-select: none; }
+    .doc .ba-pane { padding: 1rem; }
+    .doc .ba-pane.ba-before { position: relative; clip-path: inset(0 calc(100% - var(--ba, 50%)) 0 0); }
+    .doc .ba-pane.ba-after { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--ba, 50%)); background: var(--surface); }
+    .doc .pane-label { position: absolute; top: 0.5rem; left: 0.6rem; font-size: 11px; font-weight: 500; color: var(--text-muted); background: var(--surface-muted); border: 1px solid var(--border); border-radius: 9999px; padding: 0.1rem 0.55rem; z-index: 1; }
+    .doc .ba-handle { position: absolute; top: 0; bottom: 0; left: var(--ba, 50%); width: 2px; background: var(--accent); cursor: ew-resize; touch-action: none; z-index: 2; }
+    .doc .ba-handle::after { content: ""; position: absolute; top: 50%; left: -11px; width: 24px; height: 24px; margin-top: -12px; border-radius: 9999px; background: var(--surface); border: 2px solid var(--accent); }
+    .doc .ba-slider { height: -moz-fit-content; height: fit-content; }
+    @media print {
+      .doc { display: block; padding: 0; max-width: none; }
+      .doc-toc { position: static; max-height: none; border: none; background: none; padding: 0; }
+      .doc-body { max-width: none; }
+      .doc .param-panel, .doc .playground-buttons, .doc .col-menu, .doc .webgl-stage .stage-controls { display: none !important; }
+      .doc .ba-pane.ba-after { position: relative; clip-path: none; margin-top: 0.75rem; }
+    }
+    @media (max-width: 1023px) {
+      .doc { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+      .doc-toc { position: static; max-height: none; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.65rem 0.75rem; background: var(--surface); }
+      .doc .pros-cons, .doc .diff-pair { grid-template-columns: 1fr; }
+    }
+  </style>
+  <script>
+    /* Document kit JS — inert unless a .doc element exists.
+       Behaviors: TOC builder (h2/h3, slugified ids), IntersectionObserver
+       scrollspy (guarded), static figure-number validation (F8: the agent
+       authors "Fig. N - ..."; JS only checks the sequence). */
+    (function () {
+      var doc = document.querySelector('.doc');
+      if (!doc) return; /* dashboard artifact: kit stays inert */
+
+      function slugify(text, used) {
+        var base = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'section';
+        var id = base, n = 2;
+        while (used[id]) { id = base + '-' + n; n++; }
+        used[id] = true;
+        return id;
+      }
+
+      /* TOC */
+      var usedIds = {};
+      var headings = Array.prototype.slice.call(document.querySelectorAll('.doc-body h2, .doc-body h3'));
+      var tocNav = document.querySelector('.doc-toc');
+      if (tocNav && headings.length) {
+        var tocHtml = '<span class="toc-title">Contents</span><ol>';
+        var openSub = false;
+        headings.forEach(function (h) {
+          if (!h.id) h.id = slugify(h.textContent, usedIds);
+          if (h.tagName === 'H3') {
+            if (!openSub) { tocHtml += '<ol>'; openSub = true; }
+          } else if (openSub) { tocHtml += '</ol>'; openSub = false; }
+          tocHtml += '<li><a href="#' + h.id + '">' + h.textContent + '</a></li>';
+        });
+        if (openSub) tocHtml += '</ol>';
+        tocHtml += '</ol>';
+        tocNav.innerHTML = tocHtml;
+      }
+
+      /* Scrollspy (guarded: browsers without IntersectionObserver just get links) */
+      if ('IntersectionObserver' in window && tocNav) {
+        var links = {};
+        tocNav.querySelectorAll('a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            var link = links[entry.target.id];
+            if (!link) return;
+            if (entry.isIntersecting) {
+              tocNav.querySelectorAll('a.active').forEach(function (a) { a.classList.remove('active'); });
+              link.classList.add('active');
+            }
+          });
+        }, { rootMargin: '-10% 0px -75% 0px' });
+        headings.forEach(function (h) { observer.observe(h); });
+      }
+
+      /* Static figure-number validation: captions must read "Fig. N - ...",
+         N sequential from 1. Gaps/repeats/missing numbers warn in console. */
+      var seen = [];
+      document.querySelectorAll('.doc figure.doc-figure figcaption').forEach(function (cap, index) {
+        var m = cap.textContent.match(/^Fig\.\s*(\d+)/);
+        if (!m) {
+          console.warn('doc-figure ' + (index + 1) + ': caption must start with "Fig. N" (static agent-authored numbering)');
+        } else {
+          seen.push(parseInt(m[1], 10));
+        }
+      });
+      seen.forEach(function (n, i) {
+        if (n !== i + 1) console.warn('doc-figure numbering: expected Fig. ' + (i + 1) + ', found Fig. ' + n);
+      });
+
+      /* ---- table enhancement: sort (click + Enter/Space) and data-filterable ---- */
+      doc.querySelectorAll('.doc-table').forEach(function (table) {
+        const ths = table.querySelectorAll('th');
+        if (ths.length) {
+          ths.forEach(function (th, colIndex) {
+            th.setAttribute('tabindex', '0');
+            const activate = function () {
+              const dir = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
+              ths.forEach(function (other) { other.removeAttribute('aria-sort'); });
+              th.setAttribute('aria-sort', dir);
+              const tbody = table.querySelector('tbody');
+              if (!tbody) return;
+              const rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+              const cellVal = function (tr) {
+                const cell = tr.children[colIndex];
+                return cell ? cell.textContent.trim() : '';
+              };
+              const numeric = rows.length > 0 && rows.every(function (tr) {
+                const cell = tr.children[colIndex];
+                if (!cell) return false;
+                return cell.classList.contains('num') || !isNaN(parseFloat(cellVal(tr).replace(/[^0-9.\-]/g, '')));
+              });
+              rows.sort(function (a, b) {
+                const av = cellVal(a), bv = cellVal(b);
+                const cmp = numeric
+                  ? (parseFloat(av.replace(/[^0-9.\-]/g, '')) || 0) - (parseFloat(bv.replace(/[^0-9.\-]/g, '')) || 0)
+                  : av.localeCompare(bv);
+                return dir === 'ascending' ? cmp : -cmp;
+              });
+              rows.forEach(function (tr) { tbody.appendChild(tr); });
+            };
+            th.addEventListener('click', activate);
+            th.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+            });
+          });
+        }
+        if (table.hasAttribute('data-filterable')) {
+          const input = document.createElement('input');
+          input.type = 'search';
+          input.className = 'table-filter';
+          input.placeholder = 'Filter rows\u2026';
+          input.setAttribute('aria-label', 'Filter table rows');
+          table.parentNode.insertBefore(input, table);
+          input.addEventListener('input', function () {
+            const q = input.value.trim().toLowerCase();
+            table.querySelectorAll('tbody tr').forEach(function (tr) {
+              tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+          });
+        }
+      });
+
+      /* ---- in-document search palette: Ctrl+K / Cmd+K / '/' (guards: .doc + keydown) ---- */
+      let searchOpen = false;
+      let lastFocus = null;
+      let searchIndex = null;
+      let selectedIdx = 0;
+
+      function buildIndex() {
+        if (searchIndex) return searchIndex;
+        searchIndex = [];
+        const usedIds = {};
+        const headings = document.querySelectorAll('.doc-body h2, .doc-body h3');
+        headings.forEach(function (h, i) {
+          if (!h.id) h.id = slugify(h.textContent, usedIds);
+          const next = headings[i + 1];
+          let text = '';
+          let node = h.nextElementSibling;
+          while (node && node !== next) { text += ' ' + node.textContent; node = node.nextElementSibling; }
+          searchIndex.push({ heading: h.textContent.trim(), id: h.id, section: text.replace(/\s+/g, ' ').trim().slice(0, 400) });
+        });
+        return searchIndex;
+      }
+
+      function closeSearch() {
+        searchOpen = false;
+        const overlay = document.querySelector('.doc-search');
+        if (overlay) overlay.classList.remove('open');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+
+      function openSearch() {
+        if (searchOpen) return;
+        if (!doc.isConnected) return; /* stale re-eval guard */
+        searchOpen = true;
+        lastFocus = document.activeElement;
+        let overlay = document.querySelector('.doc-search');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.className = 'doc-search';
+          overlay.setAttribute('role', 'dialog');
+          overlay.setAttribute('aria-modal', 'true');
+          overlay.setAttribute('aria-label', 'Search document');
+          overlay.innerHTML = '<div class="search-backdrop"></div>' +
+            '<div class="search-panel">' +
+            '<input class="search-input" type="text" placeholder="Search\u2026 (Esc to close)" aria-label="Search document">' +
+            '<ol class="search-results"></ol>' +
+            '</div>';
+          doc.appendChild(overlay);
+          const input = overlay.querySelector('.search-input');
+          const results = overlay.querySelector('.search-results');
+          const backdrop = overlay.querySelector('.search-backdrop');
+
+          function renderResults(q) {
+            const ql = q.trim().toLowerCase();
+            results.innerHTML = '';
+            selectedIdx = 0;
+            if (!ql) {
+              results.innerHTML = '<li class="search-empty">Type to search headings and sections.</li>';
+              return;
+            }
+            const headingHits = [], sectionHits = [];
+            buildIndex().forEach(function (entry) {
+              if (entry.heading.toLowerCase().includes(ql)) headingHits.push(entry);
+              else if (entry.section.toLowerCase().includes(ql)) sectionHits.push(entry);
+            });
+            const hits = headingHits.concat(sectionHits).slice(0, 20);
+            if (!hits.length) {
+              results.innerHTML = '<li class="search-empty">No matches.</li>';
+              return;
+            }
+            hits.forEach(function (entry, i) {
+              const li = document.createElement('li');
+              const a = document.createElement('a');
+              a.href = '#' + entry.id;
+              a.innerHTML = entry.heading + '<span class="snippet">' + entry.section.slice(0, 120) + '</span>';
+              if (i === 0) a.classList.add('selected');
+              li.appendChild(a);
+              results.appendChild(li);
+            });
+          }
+
+          input.addEventListener('input', function () { renderResults(input.value); });
+          input.addEventListener('keydown', function (e) {
+            const items = results.querySelectorAll('a');
+            if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); if (!items.length) return; selectedIdx = Math.min(selectedIdx + 1, items.length - 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); if (!items.length) return; selectedIdx = Math.max(selectedIdx - 1, 0); }
+            else if (e.key === 'Enter') {
+              e.preventDefault();
+              if (items[selectedIdx]) { const href = items[selectedIdx].getAttribute('href'); closeSearch(); location.hash = href; }
+              return;
+            } else return;
+            items.forEach(function (a, i) { a.classList.toggle('selected', i === selectedIdx); });
+          });
+          backdrop.addEventListener('click', closeSearch);
+          overlay.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            const focusables = overlay.querySelectorAll('input, a');
+            const first = focusables[0], last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          });
+        }
+        overlay.classList.add('open');
+        const input = overlay.querySelector('.search-input');
+        input.focus();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      document.addEventListener('keydown', function (e) {
+        const isShortkey = (e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K');
+        const tag = (document.activeElement || {}).tagName || '';
+        const isSlash = e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(tag);
+        if (isShortkey || isSlash) {
+          e.preventDefault();
+          openSearch();
+        } else if (e.key === 'Escape' && searchOpen) {
+          closeSearch();
+        }
+      });
+
+      /* ---- batch 3: copy + name on every code block, then highlighting ---- */
+      doc.querySelectorAll('pre.doc-code').forEach(function (pre) {
+        const bar = document.createElement('div');
+        bar.className = 'code-bar';
+        const name = pre.getAttribute('data-name') || '';
+        bar.innerHTML = '<span class="code-name">' + name + '</span>' +
+          '<button class="code-copy" type="button">Copy</button>';
+        pre.parentNode.insertBefore(bar, pre);
+        bar.querySelector('.code-copy').addEventListener('click', function () {
+          navigator.clipboard.writeText(pre.textContent).then(function () {
+            const b = bar.querySelector('.code-copy');
+            b.textContent = 'Copied';
+            setTimeout(function () { b.textContent = 'Copy'; }, 1200);
+          });
+        });
+        pre.__codeBar = bar;
+      });
+      if (typeof hljs !== 'undefined') {
+        doc.querySelectorAll('pre.doc-code[data-lang]').forEach(function (pre) {
+          try { hljs.highlightElement(pre); } catch (err) { /* keep plain mono */ }
+        });
+      }
+
+      /* ---- what-if parameter panels: single channel onParams(values, panel) ---- */
+      doc.querySelectorAll('.param-panel').forEach(function (panel, pi) {
+        const info = {
+          id: panel.getAttribute('data-panel-id') || 'panel-' + (pi + 1),
+          label: panel.getAttribute('data-panel-label') || panel.getAttribute('data-panel-id') || 'panel-' + (pi + 1)
+        };
+        function collect() {
+          const values = {};
+          panel.querySelectorAll('[data-param]').forEach(function (ctl) {
+            const key = ctl.getAttribute('data-param');
+            values[key] = ctl.type === 'checkbox' ? ctl.checked
+              : (ctl.type === 'range' || ctl.type === 'number') ? parseFloat(ctl.value)
+              : ctl.value;
+          });
+          return values;
+        }
+        let paramRaf = 0;
+        function dispatchParams() {
+          cancelAnimationFrame(paramRaf);
+          paramRaf = requestAnimationFrame(function () {
+            const values = collect();
+            window.__paramValues = Object.assign({}, window.__paramValues || {}, values);
+            if (typeof window.onParams === 'function') {
+              try { window.onParams(values, info); } catch (err) { console.warn('onParams failed:', err.message); }
+            }
+          });
+        }
+        panel.addEventListener('input', dispatchParams);
+        dispatchParams(); /* initialize from default values */
+      });
+
+      /* ---- state-machine simulator ---- */
+      doc.querySelectorAll('.sm-sim').forEach(function (el) {
+        const name = el.getAttribute('data-sim');
+        const sim = (typeof SM_SIMS !== 'undefined' && SM_SIMS) ? SM_SIMS[name] : null;
+        if (!sim || !sim.transitions) return;
+        let current = sim.initial;
+        const log = [];
+        function render() {
+          const valid = sim.transitions.filter(function (t) { return t.from === current; });
+          const label = sim.states && sim.states[current] ? '<span style="color:var(--text-muted)">' + sim.states[current] + '</span>' : '';
+          el.innerHTML = '<div class="sm-state-row"><span style="color:var(--text-muted)">State</span>' +
+            '<span class="sm-current">' + current + '</span>' + label + '</div>' +
+            '<div class="sm-events">' + (valid.length
+              ? valid.map(function (t) { return '<button class="btn" data-ev="' + t.event + '">' + t.event + '</button>'; }).join('')
+              : '<span style="color:var(--text-muted)">no events from this state</span>') + '</div>' +
+            '<div class="sm-log">' + (log.length ? log.map(function (l) { return '<div>' + l + '</div>'; }).join('') : '<div>no transitions yet</div>') + '</div>';
+          el.querySelectorAll('button[data-ev]').forEach(function (b) {
+            b.addEventListener('click', function () {
+              const t = sim.transitions.find(function (x) { return x.from === current && x.event === b.getAttribute('data-ev'); });
+              if (!t) return; /* illegal transitions never render as buttons; belt-and-suspenders */
+              log.unshift(t.event + ' — ' + t.from + ' → ' + t.to);
+              if (log.length > 10) log.pop();
+              current = t.to;
+              render();
+            });
+          });
+        }
+        render();
+      });
+
+      /* ---- graph explorer (guarded on cytoscape) ---- */
+      doc.querySelectorAll('.graph-stage').forEach(function (el) {
+        if (typeof cytoscape === 'undefined') {
+          el.innerHTML = '<p class="graph-fallback">Graph library not loaded in this artifact.</p>';
+          return;
+        }
+        const def = (typeof GRAPHS !== 'undefined' && GRAPHS) ? GRAPHS[el.getAttribute('data-graph')] : null;
+        if (!def || !def.elements) return;
+        function styleFor(theme) {
+          return [
+            { selector: 'node', style: { 'background-color': theme.series[0], label: 'data(label)', color: theme.text, 'font-size': 10, 'text-valign': 'bottom' } },
+            { selector: 'edge', style: { width: 1.5, 'line-color': theme.textMuted, 'target-arrow-color': theme.textMuted, 'target-arrow-shape': 'triangle', 'curve-style': 'bezier' } }
+          ];
+        }
+        const cy = cytoscape({
+          container: el,
+          elements: def.elements,
+          layout: { name: def.layout || 'cose' },
+          style: styleFor(getActiveTheme()),
+          wheelSensitivity: 0.2
+        });
+        el.__cy = cy; /* exposed for tests and debugging */
+        cy.fit(undefined, 24);
+        document.addEventListener('theme:change', function (ev) {
+          cy.style().fromJson(styleFor(ev.detail.theme)).update();
+        });
+      });
+
+      /* ---- webgl stages (guarded on THREE + OrbitControls + context) ---- */
+      doc.querySelectorAll('.webgl-stage').forEach(function (stage) {
+        const canvas = document.createElement('canvas');
+        stage.insertBefore(canvas, stage.firstChild);
+        const fallback = stage.querySelector('.webgl-fallback') || (() => {
+          const p = document.createElement('p'); p.className = 'webgl-fallback'; stage.appendChild(p); return p;
+        })();
+        function showFallback(msg) {
+          if (msg) fallback.textContent = msg;
+          fallback.style.display = 'flex';
+          canvas.style.display = 'none';
+        }
+        if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+          showFallback('Three.js is not loaded in this artifact (snippet registry).');
+          return;
+        }
+        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+        if (!gl) { showFallback(); return; }
+
+        const sceneName = stage.getAttribute('data-scene');
+        const sceneDef = (typeof WEBGL_SCENES !== 'undefined' && WEBGL_SCENES) ? WEBGL_SCENES[sceneName] : null;
+        if (!sceneDef || !sceneDef.setup) { showFallback('No scene registered for "' + sceneName + '".'); return; }
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 2000);
+        camera.position.set(0, 2, 6);
+        const controls = new THREE.OrbitControls(camera, canvas);
+        const ctx = { scene: scene, camera: camera, renderer: renderer, controls: controls, container: stage, theme: getActiveTheme(), THREE: THREE };
+
+        let sceneApi = null;
+        try { sceneApi = sceneDef.setup(ctx); }
+        catch (err) { showFallback('Scene failed to start: ' + err.message); return; }
+
+        function resize() {
+          const w = Math.max(1, stage.clientWidth), h = Math.max(1, stage.clientHeight);
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          if (sceneApi && sceneApi.onResize) sceneApi.onResize(w, h);
+          if (sceneApi && sceneApi.frame) sceneApi.frame(performance.now() / 1000, 0.016, window.__paramValues || {});
+          renderer.render(scene, camera);
+        }
+        if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(stage);
+        else window.addEventListener('resize', resize);
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let userRunning = !reduced, inView = true, docHidden = false, contextLost = false;
+        const runBtn = stage.querySelector('[data-act="toggle-run"]');
+        function syncLabel() { if (runBtn) runBtn.textContent = userRunning ? 'Pause' : 'Play'; }
+        syncLabel();
+        if (runBtn) runBtn.addEventListener('click', function () { userRunning = !userRunning; syncLabel(); lastTime = performance.now(); });
+
+        let lastTime = performance.now();
+        let rafId = 0;
+        function tick(now) {
+          rafId = requestAnimationFrame(tick);
+          const dt = Math.min(0.05, (now - lastTime) / 1000);
+          lastTime = now;
+          if (!(userRunning && inView && !docHidden && !contextLost)) return;
+          if (sceneApi && sceneApi.frame) sceneApi.frame(now / 1000, dt, window.__paramValues || {});
+          renderer.render(scene, camera);
+        }
+        rafId = requestAnimationFrame(tick);
+        resize();
+
+        if (typeof IntersectionObserver !== 'undefined') {
+          new IntersectionObserver(function (entries) {
+            inView = entries[0] ? entries[0].isIntersecting : true;
+            lastTime = performance.now();
+          }, { threshold: 0.05 }).observe(stage);
+        }
+        document.addEventListener('visibilitychange', function () { docHidden = document.hidden; lastTime = performance.now(); });
+        document.addEventListener('theme:change', function (ev) {
+          ctx.theme = ev.detail.theme;
+          if (sceneApi && sceneApi.onTheme) sceneApi.onTheme(ctx.theme);
+          if (!(userRunning && inView && !docHidden && !contextLost)) { sceneApi && sceneApi.frame && sceneApi.frame(performance.now() / 1000, 0.016, window.__paramValues || {}); renderer.render(scene, camera); }
+        });
+        canvas.addEventListener('webglcontextlost', function (e) {
+          e.preventDefault(); contextLost = true; showFallback('WebGL context lost — reload the page to restore the scene.');
+        });
+        window.addEventListener('pagehide', function () {
+          cancelAnimationFrame(rafId);
+          if (sceneApi && sceneApi.dispose) sceneApi.dispose();
+          renderer.dispose();
+        });
+      });
+
+      /* ---- code playground: Web Worker runner (M9 — Stop always reachable) ---- */
+      const RUNNER_SOURCE = [
+        'self.console = {',
+        '  log: function () { postMessage({ type: "log", line: Array.prototype.map.call(arguments, String).join(" ") }); },',
+        '  warn: function () { postMessage({ type: "log", line: "warn: " + Array.prototype.map.call(arguments, String).join(" ") }); },',
+        '  error: function () { postMessage({ type: "log", line: "error: " + Array.prototype.map.call(arguments, String).join(" ") }); }',
+        '};',
+        'self.addEventListener("message", function (e) {',
+        '  try { new Function(e.data.code)(); postMessage({ type: "done" }); }',
+        '  catch (err) { postMessage({ type: "log", line: "Error: " + (err && err.message) }); postMessage({ type: "done" }); }',
+        '});'
+      ].join('\n');
+      const runnerBlobUrl = URL.createObjectURL(new Blob([RUNNER_SOURCE], { type: 'text/javascript' }));
+
+      doc.querySelectorAll('pre.doc-code[data-playground]').forEach(function (pre) {
+        const bar = pre.__codeBar;
+        const out = document.createElement('pre');
+        out.className = 'playground-output';
+        out.textContent = '— not run yet';
+        pre.parentNode.insertBefore(out, pre.nextSibling);
+        let worker = null;
+
+        const runBtn = document.createElement('button');
+        runBtn.className = 'code-copy'; runBtn.type = 'button'; runBtn.textContent = 'Run';
+        const stopBtn = document.createElement('button');
+        stopBtn.className = 'code-copy'; stopBtn.type = 'button'; stopBtn.textContent = 'Stop';
+        if (bar) bar.appendChild(runBtn);
+        if (bar) bar.appendChild(stopBtn);
+
+        function stop() {
+          if (worker) { worker.terminate(); worker = null; }
+          out.textContent += '\n— stopped';
+          runBtn.textContent = 'Run';
+        }
+        stopBtn.addEventListener('click', function () { if (worker) stop(); });
+
+        runBtn.addEventListener('click', function () {
+          if (worker) worker.terminate();
+          out.textContent = '';
+          runBtn.textContent = 'Running…';
+          try {
+            worker = new Worker(runnerBlobUrl);
+          } catch (err) {
+            out.textContent = 'Worker unavailable: ' + err.message;
+            runBtn.textContent = 'Run';
+            return;
+          }
+          worker.addEventListener('message', function (ev) {
+            if (ev.target !== worker) return; /* spoofing guard */
+            if (ev.data.type === 'log') out.textContent += ev.data.line + '\n';
+            else if (ev.data.type === 'done') { runBtn.textContent = 'Run'; }
+          });
+          worker.addEventListener('error', function (ev) {
+            out.textContent += 'Error: ' + (ev.message || 'worker error') + '\n';
+            runBtn.textContent = 'Run';
+          });
+          worker.postMessage({ code: pre.textContent });
+        });
+      });
+
+      /* ---- dataset explorer: column toggles + visible-row summaries ---- */
+      doc.querySelectorAll('.doc-table[data-dataset]').forEach(function (table) {
+        const ths = table.querySelectorAll('thead th');
+        if (!ths.length) return;
+        const menu = document.createElement('details');
+        menu.className = 'col-menu';
+        menu.innerHTML = '<summary>Columns</summary>' + [...ths].map(function (th, i) {
+          return '<label><input type="checkbox" checked data-col="' + i + '"> ' + th.textContent.trim() + '</label>';
+        }).join('');
+        table.parentNode.insertBefore(menu, table);
+        function applyCols() {
+          const hidden = [...menu.querySelectorAll('input')].filter(function (c) { return !c.checked; }).map(function (c) { return +c.getAttribute('data-col'); });
+          table.querySelectorAll('tr').forEach(function (tr) {
+            [...tr.children].forEach(function (cell, i) { cell.style.display = hidden.includes(i) ? 'none' : ''; });
+          });
+          if (table.__computeSummary) table.__computeSummary();
+        }
+        menu.addEventListener('change', applyCols);
+
+        const body = table.querySelector('tbody');
+        const tfoot = document.createElement('tfoot');
+        tfoot.className = 'doc-summary';
+        table.appendChild(tfoot);
+        function computeSummary() {
+          const rows = [...body.querySelectorAll('tr')].filter(function (tr) { return tr.style.display !== 'none'; });
+          const cells = [];
+          for (let c = 0; c < ths.length; c++) {
+            const numeric = ths[c].classList.contains('num');
+            const vals = rows.map(function (tr) { return tr.children[c] ? parseFloat(tr.children[c].textContent.replace(/[^0-9.\-]/g, '')) : NaN; }).filter(function (v) { return !isNaN(v); });
+            if (!numeric || !vals.length) { cells.push(c === 0 ? rows.length + ' rows' : ''); continue; }
+            const sum = vals.reduce(function (a, b) { return a + b; }, 0);
+            cells.push('n=' + vals.length + ' · Σ ' + (Math.round(sum * 100) / 100) + ' · x̄ ' + (Math.round((sum / vals.length) * 100) / 100));
+          }
+          tfoot.innerHTML = '<tr>' + cells.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>';
+        }
+        table.__computeSummary = computeSummary;
+        computeSummary();
+        if (table.parentNode) table.parentNode.addEventListener('input', function () { table.__computeSummary(); });
+      });
+
+      /* ---- before/after slider (pointer + keyboard, ARIA slider) ---- */
+      doc.querySelectorAll('.ba-slider').forEach(function (slider) {
+        const handle = slider.querySelector('.ba-handle');
+        if (!handle) return;
+        let pos = 50;
+        function apply() {
+          slider.style.setProperty('--ba', pos + '%');
+          handle.style.left = pos + '%';
+          handle.setAttribute('aria-valuenow', Math.round(pos));
+        }
+        function setFromClientX(clientX) {
+          const r = slider.getBoundingClientRect();
+          pos = Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100));
+          apply();
+        }
+        handle.addEventListener('pointerdown', function (e) {
+          handle.setPointerCapture(e.pointerId);
+          const move = function (ev) { setFromClientX(ev.clientX); };
+          const up = function () {
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', up);
+          };
+          handle.addEventListener('pointermove', move);
+          handle.addEventListener('pointerup', up);
+          setFromClientX(e.clientX);
+        });
+        handle.addEventListener('keydown', function (e) {
+          const delta = e.key === 'ArrowLeft' ? -5 : e.key === 'ArrowRight' ? 5 : e.key === 'Home' ? -pos : e.key === 'End' ? 100 - pos : null;
+          if (delta === null) return;
+          e.preventDefault();
+          pos = Math.min(100, Math.max(0, pos + delta));
+          apply();
+        });
+        apply();
+      });
+    })();
+  </script>
+  <!-- /GENRE:DOCUMENT KIT -->
+</body>
+</html>

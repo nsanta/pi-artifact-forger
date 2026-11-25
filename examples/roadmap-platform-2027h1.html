@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <!-- contract:artifact-forger v2 -->
+  <!-- contract:artifact-forger v3 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Artifact Template</title>
@@ -545,6 +545,11 @@ gantt
       };
       Object.entries(printVars).forEach(([k, v]) => root.style.setProperty(k, v));
 
+      /* Syntax palette (batch 2): five hues from the active palette's series,
+         consumed by hljs class styling in the kit (M1 — no separate pipeline). */
+      t.series.slice(0, 5).forEach((hex, i) => root.style.setProperty(`--syntax-${i + 1}`, hex));
+      document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme: t, mode: state.mode } }));
+
       localStorage.setItem('artifact-palette', state.palette);
       localStorage.setItem('artifact-mode', state.mode);
 
@@ -928,10 +933,54 @@ gantt
     .doc .changelog-list .cl-version { font-weight: 600; margin-right: 0.5rem; }
     .doc .changelog-list .cl-date { font-size: 12px; color: var(--text-muted); }
     .doc .changelog-list ul { margin: 0.4rem 0 0; padding-left: 1.2rem; font-size: 13.5px; }
+    /* ---- batch 3 vocabulary: webgl / params / playground / sm-sim / graph / dataset / ba-slider ---- */
+    .doc .webgl-stage { position: relative; height: 22rem; border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; background: var(--surface-muted); margin: 0 0 1.25rem; }
+    .doc .webgl-stage canvas { display: block; width: 100%; height: 100%; }
+    .doc .webgl-stage .stage-controls { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.4rem; z-index: 2; }
+    .doc .webgl-fallback { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); font-size: 13px; margin: 0; padding: 1rem; }
+    .doc .webgl-stage.no-webgl .webgl-fallback { display: flex; }
+    .doc .param-panel { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.85rem 1rem; margin: 0 0 1.25rem; font-size: 13px; }
+    .doc .param-panel label { display: flex; align-items: center; gap: 0.5rem; }
+    .doc .param-panel input[type="range"] { accent-color: var(--accent); width: 9rem; }
+    .doc .param-panel input[type="checkbox"] { accent-color: var(--accent); }
+    .doc .param-value { font-family: 'JetBrains Mono', ui-monospace, monospace; min-width: 2.75rem; }
+    .doc .code-bar { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; margin: 0 0 0.25rem; }
+    .doc .code-name { font-size: 11px; font-weight: 500; color: var(--text-muted); font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .doc .code-copy { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .doc .code-copy:hover { color: var(--text); }
+    .doc pre.doc-code[data-lang] .hljs-keyword { color: var(--syntax-1); }
+    .doc pre.doc-code[data-lang] .hljs-string, .doc pre.doc-code[data-lang] .hljs-attr { color: var(--syntax-3); }
+    .doc pre.doc-code[data-lang] .hljs-number, .doc pre.doc-code[data-lang] .hljs-literal { color: var(--syntax-4); }
+    .doc pre.doc-code[data-lang] .hljs-comment { color: var(--text-muted); font-style: italic; }
+    .doc pre.doc-code[data-lang] .hljs-title, .doc pre.doc-code[data-lang] .hljs-function { color: var(--syntax-2); }
+    .doc .playground-buttons { display: flex; gap: 0.5rem; }
+    .doc pre.playground-output { background: var(--surface); border: 1px dashed var(--border); border-radius: 0.5rem; padding: 0.7rem 0.9rem; font-size: 12.5px; white-space: pre-wrap; margin: 0 0 1.25rem; min-height: 2.4rem; color: var(--text); }
+    .doc .sm-sim { border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface); padding: 0.9rem 1rem; margin: 0 0 1.25rem; font-size: 13.5px; }
+    .doc .sm-sim .sm-state-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .doc .sm-sim .sm-current { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; }
+    .doc .sm-sim .sm-events { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+    .doc .sm-sim .sm-log { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 0.5rem; }
+    .doc .graph-stage { height: 24rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface); margin: 0 0 1.25rem; }
+    .doc .graph-fallback, .doc .webgl-stage .graph-fallback { color: var(--text-muted); font-size: 13px; margin: 0; padding: 1rem; }
+    .doc .col-menu { font-size: 12.5px; margin-bottom: 0.5rem; border: 1px solid var(--border); border-radius: 0.375rem; background: var(--surface); padding: 0.35rem 0.6rem; }
+    .doc .col-menu summary { cursor: pointer; color: var(--text-muted); }
+    .doc .col-menu label { margin-right: 0.9rem; white-space: nowrap; }
+    .doc .col-menu input { accent-color: var(--accent); }
+    .doc tfoot.doc-summary td { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--text-muted); border-top: 2px solid var(--border); }
+    .doc .ba-slider { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 0.5rem; margin: 0 0 1.25rem; user-select: none; }
+    .doc .ba-pane { padding: 1rem; }
+    .doc .ba-pane.ba-before { position: relative; clip-path: inset(0 calc(100% - var(--ba, 50%)) 0 0); }
+    .doc .ba-pane.ba-after { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--ba, 50%)); background: var(--surface); }
+    .doc .pane-label { position: absolute; top: 0.5rem; left: 0.6rem; font-size: 11px; font-weight: 500; color: var(--text-muted); background: var(--surface-muted); border: 1px solid var(--border); border-radius: 9999px; padding: 0.1rem 0.55rem; z-index: 1; }
+    .doc .ba-handle { position: absolute; top: 0; bottom: 0; left: var(--ba, 50%); width: 2px; background: var(--accent); cursor: ew-resize; touch-action: none; z-index: 2; }
+    .doc .ba-handle::after { content: ""; position: absolute; top: 50%; left: -11px; width: 24px; height: 24px; margin-top: -12px; border-radius: 9999px; background: var(--surface); border: 2px solid var(--accent); }
+    .doc .ba-slider { height: -moz-fit-content; height: fit-content; }
     @media print {
       .doc { display: block; padding: 0; max-width: none; }
       .doc-toc { position: static; max-height: none; border: none; background: none; padding: 0; }
       .doc-body { max-width: none; }
+      .doc .param-panel, .doc .playground-buttons, .doc .col-menu, .doc .webgl-stage .stage-controls { display: none !important; }
+      .doc .ba-pane.ba-after { position: relative; clip-path: none; margin-top: 0.75rem; }
     }
     @media (max-width: 1023px) {
       .doc { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
@@ -1178,6 +1227,343 @@ gantt
         } else if (e.key === 'Escape' && searchOpen) {
           closeSearch();
         }
+      });
+
+      /* ---- batch 3: copy + name on every code block, then highlighting ---- */
+      doc.querySelectorAll('pre.doc-code').forEach(function (pre) {
+        const bar = document.createElement('div');
+        bar.className = 'code-bar';
+        const name = pre.getAttribute('data-name') || '';
+        bar.innerHTML = '<span class="code-name">' + name + '</span>' +
+          '<button class="code-copy" type="button">Copy</button>';
+        pre.parentNode.insertBefore(bar, pre);
+        bar.querySelector('.code-copy').addEventListener('click', function () {
+          navigator.clipboard.writeText(pre.textContent).then(function () {
+            const b = bar.querySelector('.code-copy');
+            b.textContent = 'Copied';
+            setTimeout(function () { b.textContent = 'Copy'; }, 1200);
+          });
+        });
+        pre.__codeBar = bar;
+      });
+      if (typeof hljs !== 'undefined') {
+        doc.querySelectorAll('pre.doc-code[data-lang]').forEach(function (pre) {
+          try { hljs.highlightElement(pre); } catch (err) { /* keep plain mono */ }
+        });
+      }
+
+      /* ---- what-if parameter panels: single channel onParams(values, panel) ---- */
+      doc.querySelectorAll('.param-panel').forEach(function (panel, pi) {
+        const info = {
+          id: panel.getAttribute('data-panel-id') || 'panel-' + (pi + 1),
+          label: panel.getAttribute('data-panel-label') || panel.getAttribute('data-panel-id') || 'panel-' + (pi + 1)
+        };
+        function collect() {
+          const values = {};
+          panel.querySelectorAll('[data-param]').forEach(function (ctl) {
+            const key = ctl.getAttribute('data-param');
+            values[key] = ctl.type === 'checkbox' ? ctl.checked
+              : (ctl.type === 'range' || ctl.type === 'number') ? parseFloat(ctl.value)
+              : ctl.value;
+          });
+          return values;
+        }
+        let paramRaf = 0;
+        function dispatchParams() {
+          cancelAnimationFrame(paramRaf);
+          paramRaf = requestAnimationFrame(function () {
+            const values = collect();
+            window.__paramValues = Object.assign({}, window.__paramValues || {}, values);
+            if (typeof window.onParams === 'function') {
+              try { window.onParams(values, info); } catch (err) { console.warn('onParams failed:', err.message); }
+            }
+          });
+        }
+        panel.addEventListener('input', dispatchParams);
+        dispatchParams(); /* initialize from default values */
+      });
+
+      /* ---- state-machine simulator ---- */
+      doc.querySelectorAll('.sm-sim').forEach(function (el) {
+        const name = el.getAttribute('data-sim');
+        const sim = (typeof SM_SIMS !== 'undefined' && SM_SIMS) ? SM_SIMS[name] : null;
+        if (!sim || !sim.transitions) return;
+        let current = sim.initial;
+        const log = [];
+        function render() {
+          const valid = sim.transitions.filter(function (t) { return t.from === current; });
+          const label = sim.states && sim.states[current] ? '<span style="color:var(--text-muted)">' + sim.states[current] + '</span>' : '';
+          el.innerHTML = '<div class="sm-state-row"><span style="color:var(--text-muted)">State</span>' +
+            '<span class="sm-current">' + current + '</span>' + label + '</div>' +
+            '<div class="sm-events">' + (valid.length
+              ? valid.map(function (t) { return '<button class="btn" data-ev="' + t.event + '">' + t.event + '</button>'; }).join('')
+              : '<span style="color:var(--text-muted)">no events from this state</span>') + '</div>' +
+            '<div class="sm-log">' + (log.length ? log.map(function (l) { return '<div>' + l + '</div>'; }).join('') : '<div>no transitions yet</div>') + '</div>';
+          el.querySelectorAll('button[data-ev]').forEach(function (b) {
+            b.addEventListener('click', function () {
+              const t = sim.transitions.find(function (x) { return x.from === current && x.event === b.getAttribute('data-ev'); });
+              if (!t) return; /* illegal transitions never render as buttons; belt-and-suspenders */
+              log.unshift(t.event + ' — ' + t.from + ' → ' + t.to);
+              if (log.length > 10) log.pop();
+              current = t.to;
+              render();
+            });
+          });
+        }
+        render();
+      });
+
+      /* ---- graph explorer (guarded on cytoscape) ---- */
+      doc.querySelectorAll('.graph-stage').forEach(function (el) {
+        if (typeof cytoscape === 'undefined') {
+          el.innerHTML = '<p class="graph-fallback">Graph library not loaded in this artifact.</p>';
+          return;
+        }
+        const def = (typeof GRAPHS !== 'undefined' && GRAPHS) ? GRAPHS[el.getAttribute('data-graph')] : null;
+        if (!def || !def.elements) return;
+        function styleFor(theme) {
+          return [
+            { selector: 'node', style: { 'background-color': theme.series[0], label: 'data(label)', color: theme.text, 'font-size': 10, 'text-valign': 'bottom' } },
+            { selector: 'edge', style: { width: 1.5, 'line-color': theme.textMuted, 'target-arrow-color': theme.textMuted, 'target-arrow-shape': 'triangle', 'curve-style': 'bezier' } }
+          ];
+        }
+        const cy = cytoscape({
+          container: el,
+          elements: def.elements,
+          layout: { name: def.layout || 'cose' },
+          style: styleFor(getActiveTheme()),
+          wheelSensitivity: 0.2
+        });
+        el.__cy = cy; /* exposed for tests and debugging */
+        cy.fit(undefined, 24);
+        document.addEventListener('theme:change', function (ev) {
+          cy.style().fromJson(styleFor(ev.detail.theme)).update();
+        });
+      });
+
+      /* ---- webgl stages (guarded on THREE + OrbitControls + context) ---- */
+      doc.querySelectorAll('.webgl-stage').forEach(function (stage) {
+        const canvas = document.createElement('canvas');
+        stage.insertBefore(canvas, stage.firstChild);
+        const fallback = stage.querySelector('.webgl-fallback') || (() => {
+          const p = document.createElement('p'); p.className = 'webgl-fallback'; stage.appendChild(p); return p;
+        })();
+        function showFallback(msg) {
+          if (msg) fallback.textContent = msg;
+          fallback.style.display = 'flex';
+          canvas.style.display = 'none';
+        }
+        if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+          showFallback('Three.js is not loaded in this artifact (snippet registry).');
+          return;
+        }
+        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+        if (!gl) { showFallback(); return; }
+
+        const sceneName = stage.getAttribute('data-scene');
+        const sceneDef = (typeof WEBGL_SCENES !== 'undefined' && WEBGL_SCENES) ? WEBGL_SCENES[sceneName] : null;
+        if (!sceneDef || !sceneDef.setup) { showFallback('No scene registered for "' + sceneName + '".'); return; }
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 2000);
+        camera.position.set(0, 2, 6);
+        const controls = new THREE.OrbitControls(camera, canvas);
+        const ctx = { scene: scene, camera: camera, renderer: renderer, controls: controls, container: stage, theme: getActiveTheme(), THREE: THREE };
+
+        let sceneApi = null;
+        try { sceneApi = sceneDef.setup(ctx); }
+        catch (err) { showFallback('Scene failed to start: ' + err.message); return; }
+
+        function resize() {
+          const w = Math.max(1, stage.clientWidth), h = Math.max(1, stage.clientHeight);
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          if (sceneApi && sceneApi.onResize) sceneApi.onResize(w, h);
+          if (sceneApi && sceneApi.frame) sceneApi.frame(performance.now() / 1000, 0.016, window.__paramValues || {});
+          renderer.render(scene, camera);
+        }
+        if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(stage);
+        else window.addEventListener('resize', resize);
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let userRunning = !reduced, inView = true, docHidden = false, contextLost = false;
+        const runBtn = stage.querySelector('[data-act="toggle-run"]');
+        function syncLabel() { if (runBtn) runBtn.textContent = userRunning ? 'Pause' : 'Play'; }
+        syncLabel();
+        if (runBtn) runBtn.addEventListener('click', function () { userRunning = !userRunning; syncLabel(); lastTime = performance.now(); });
+
+        let lastTime = performance.now();
+        let rafId = 0;
+        function tick(now) {
+          rafId = requestAnimationFrame(tick);
+          const dt = Math.min(0.05, (now - lastTime) / 1000);
+          lastTime = now;
+          if (!(userRunning && inView && !docHidden && !contextLost)) return;
+          if (sceneApi && sceneApi.frame) sceneApi.frame(now / 1000, dt, window.__paramValues || {});
+          renderer.render(scene, camera);
+        }
+        rafId = requestAnimationFrame(tick);
+        resize();
+
+        if (typeof IntersectionObserver !== 'undefined') {
+          new IntersectionObserver(function (entries) {
+            inView = entries[0] ? entries[0].isIntersecting : true;
+            lastTime = performance.now();
+          }, { threshold: 0.05 }).observe(stage);
+        }
+        document.addEventListener('visibilitychange', function () { docHidden = document.hidden; lastTime = performance.now(); });
+        document.addEventListener('theme:change', function (ev) {
+          ctx.theme = ev.detail.theme;
+          if (sceneApi && sceneApi.onTheme) sceneApi.onTheme(ctx.theme);
+          if (!(userRunning && inView && !docHidden && !contextLost)) { sceneApi && sceneApi.frame && sceneApi.frame(performance.now() / 1000, 0.016, window.__paramValues || {}); renderer.render(scene, camera); }
+        });
+        canvas.addEventListener('webglcontextlost', function (e) {
+          e.preventDefault(); contextLost = true; showFallback('WebGL context lost — reload the page to restore the scene.');
+        });
+        window.addEventListener('pagehide', function () {
+          cancelAnimationFrame(rafId);
+          if (sceneApi && sceneApi.dispose) sceneApi.dispose();
+          renderer.dispose();
+        });
+      });
+
+      /* ---- code playground: Web Worker runner (M9 — Stop always reachable) ---- */
+      const RUNNER_SOURCE = [
+        'self.console = {',
+        '  log: function () { postMessage({ type: "log", line: Array.prototype.map.call(arguments, String).join(" ") }); },',
+        '  warn: function () { postMessage({ type: "log", line: "warn: " + Array.prototype.map.call(arguments, String).join(" ") }); },',
+        '  error: function () { postMessage({ type: "log", line: "error: " + Array.prototype.map.call(arguments, String).join(" ") }); }',
+        '};',
+        'self.addEventListener("message", function (e) {',
+        '  try { new Function(e.data.code)(); postMessage({ type: "done" }); }',
+        '  catch (err) { postMessage({ type: "log", line: "Error: " + (err && err.message) }); postMessage({ type: "done" }); }',
+        '});'
+      ].join('\n');
+      const runnerBlobUrl = URL.createObjectURL(new Blob([RUNNER_SOURCE], { type: 'text/javascript' }));
+
+      doc.querySelectorAll('pre.doc-code[data-playground]').forEach(function (pre) {
+        const bar = pre.__codeBar;
+        const out = document.createElement('pre');
+        out.className = 'playground-output';
+        out.textContent = '— not run yet';
+        pre.parentNode.insertBefore(out, pre.nextSibling);
+        let worker = null;
+
+        const runBtn = document.createElement('button');
+        runBtn.className = 'code-copy'; runBtn.type = 'button'; runBtn.textContent = 'Run';
+        const stopBtn = document.createElement('button');
+        stopBtn.className = 'code-copy'; stopBtn.type = 'button'; stopBtn.textContent = 'Stop';
+        if (bar) bar.appendChild(runBtn);
+        if (bar) bar.appendChild(stopBtn);
+
+        function stop() {
+          if (worker) { worker.terminate(); worker = null; }
+          out.textContent += '\n— stopped';
+          runBtn.textContent = 'Run';
+        }
+        stopBtn.addEventListener('click', function () { if (worker) stop(); });
+
+        runBtn.addEventListener('click', function () {
+          if (worker) worker.terminate();
+          out.textContent = '';
+          runBtn.textContent = 'Running…';
+          try {
+            worker = new Worker(runnerBlobUrl);
+          } catch (err) {
+            out.textContent = 'Worker unavailable: ' + err.message;
+            runBtn.textContent = 'Run';
+            return;
+          }
+          worker.addEventListener('message', function (ev) {
+            if (ev.target !== worker) return; /* spoofing guard */
+            if (ev.data.type === 'log') out.textContent += ev.data.line + '\n';
+            else if (ev.data.type === 'done') { runBtn.textContent = 'Run'; }
+          });
+          worker.addEventListener('error', function (ev) {
+            out.textContent += 'Error: ' + (ev.message || 'worker error') + '\n';
+            runBtn.textContent = 'Run';
+          });
+          worker.postMessage({ code: pre.textContent });
+        });
+      });
+
+      /* ---- dataset explorer: column toggles + visible-row summaries ---- */
+      doc.querySelectorAll('.doc-table[data-dataset]').forEach(function (table) {
+        const ths = table.querySelectorAll('thead th');
+        if (!ths.length) return;
+        const menu = document.createElement('details');
+        menu.className = 'col-menu';
+        menu.innerHTML = '<summary>Columns</summary>' + [...ths].map(function (th, i) {
+          return '<label><input type="checkbox" checked data-col="' + i + '"> ' + th.textContent.trim() + '</label>';
+        }).join('');
+        table.parentNode.insertBefore(menu, table);
+        function applyCols() {
+          const hidden = [...menu.querySelectorAll('input')].filter(function (c) { return !c.checked; }).map(function (c) { return +c.getAttribute('data-col'); });
+          table.querySelectorAll('tr').forEach(function (tr) {
+            [...tr.children].forEach(function (cell, i) { cell.style.display = hidden.includes(i) ? 'none' : ''; });
+          });
+          if (table.__computeSummary) table.__computeSummary();
+        }
+        menu.addEventListener('change', applyCols);
+
+        const body = table.querySelector('tbody');
+        const tfoot = document.createElement('tfoot');
+        tfoot.className = 'doc-summary';
+        table.appendChild(tfoot);
+        function computeSummary() {
+          const rows = [...body.querySelectorAll('tr')].filter(function (tr) { return tr.style.display !== 'none'; });
+          const cells = [];
+          for (let c = 0; c < ths.length; c++) {
+            const numeric = ths[c].classList.contains('num');
+            const vals = rows.map(function (tr) { return tr.children[c] ? parseFloat(tr.children[c].textContent.replace(/[^0-9.\-]/g, '')) : NaN; }).filter(function (v) { return !isNaN(v); });
+            if (!numeric || !vals.length) { cells.push(c === 0 ? rows.length + ' rows' : ''); continue; }
+            const sum = vals.reduce(function (a, b) { return a + b; }, 0);
+            cells.push('n=' + vals.length + ' · Σ ' + (Math.round(sum * 100) / 100) + ' · x̄ ' + (Math.round((sum / vals.length) * 100) / 100));
+          }
+          tfoot.innerHTML = '<tr>' + cells.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>';
+        }
+        table.__computeSummary = computeSummary;
+        computeSummary();
+        if (table.parentNode) table.parentNode.addEventListener('input', function () { table.__computeSummary(); });
+      });
+
+      /* ---- before/after slider (pointer + keyboard, ARIA slider) ---- */
+      doc.querySelectorAll('.ba-slider').forEach(function (slider) {
+        const handle = slider.querySelector('.ba-handle');
+        if (!handle) return;
+        let pos = 50;
+        function apply() {
+          slider.style.setProperty('--ba', pos + '%');
+          handle.style.left = pos + '%';
+          handle.setAttribute('aria-valuenow', Math.round(pos));
+        }
+        function setFromClientX(clientX) {
+          const r = slider.getBoundingClientRect();
+          pos = Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100));
+          apply();
+        }
+        handle.addEventListener('pointerdown', function (e) {
+          handle.setPointerCapture(e.pointerId);
+          const move = function (ev) { setFromClientX(ev.clientX); };
+          const up = function () {
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', up);
+          };
+          handle.addEventListener('pointermove', move);
+          handle.addEventListener('pointerup', up);
+          setFromClientX(e.clientX);
+        });
+        handle.addEventListener('keydown', function (e) {
+          const delta = e.key === 'ArrowLeft' ? -5 : e.key === 'ArrowRight' ? 5 : e.key === 'Home' ? -pos : e.key === 'End' ? 100 - pos : null;
+          if (delta === null) return;
+          e.preventDefault();
+          pos = Math.min(100, Math.max(0, pos + delta));
+          apply();
+        });
+        apply();
       });
     })();
   </script>

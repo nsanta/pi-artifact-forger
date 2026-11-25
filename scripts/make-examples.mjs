@@ -556,9 +556,356 @@ makeDoc("release-notes-importer-0.3.0.html", {
 });
 
 /* ------------------------------------------------------------------ */
+/* Batch 3 examples: simulation, state machine, graph, dataset,        */
+/* playground, before/after slider.                                    */
+/* ------------------------------------------------------------------ */
 
+const TAG_THREE = '<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>';
+const TAG_ORBIT = '<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>';
+const TAG_HLJS = '<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>';
+const TAG_CYTO = '<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.0/dist/cytoscape.min.js"></script>';
+
+function makeDocEx(name, opts) {
+  makeDoc(name, opts);
+  if (opts.extraScripts) {
+    let out = examples[name];
+    if (!out.includes("</head>")) throw new Error(name + ": no </head>");
+    out = out.replace("</head>", opts.extraScripts.join("\n") + "\n</head>");
+    examples[name] = out;
+  }
+  if (opts.authoringJs) {
+    let out = examples[name];
+    const marker = "<!-- GENRE:DOCUMENT KIT -->";
+    if (!out.includes(marker)) throw new Error(name + ": kit marker missing");
+    out = out.replace(marker, '<script>\n' + opts.authoringJs.trim() + "\n</script>\n  " + marker);
+    examples[name] = out;
+  }
+}
+
+/* 9. Simulation — orbital POC (webgl-stage + param panel) */
+makeDocEx("simulation-orbital-poc.html", {
+  header: {
+    title: "Orbital Simulation — 3D POC",
+    badge: "Simulation",
+    subtitle: "Platform team · 2026-11-25 · sample simulation (WebGL)",
+  },
+  body: `
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">Orbital Simulation — 3D POC</p>
+      <dl class="spec-meta">
+        <div><dt>Status</dt><dd>POC</dd></div>
+        <div><dt>Owners</dt><dd>platform team</dd></div>
+        <div><dt>Date</dt><dd>2026-11-25</dd></div>
+        <div><dt>Source</dt><dd>docs/orbital-poc.md</dd></div>
+      </dl>
+      <h2>Objective</h2>
+      <p>Demonstrate an interactive 3D proof of concept inside a reviewable artifact: a central body with an orbiting particle field, theme-aware and fully client-side.</p>
+      <h2>Assumptions & parameters</h2>
+      <p>Drag to orbit, scroll to zoom. Parameters apply live (see Fig. 0 — the panel itself).</p>
+      <div class="param-panel" data-panel-id="orbital" data-panel-label="Orbital parameters">
+        <label>Rate <input type="range" data-param="rate" min="0" max="3" step="0.1" value="1"><span class="param-value">1.0</span></label>
+        <label>Tilt <input type="range" data-param="tilt" min="0" max="80" step="1" value="25"><span class="param-value">25°</span></label>
+        <label><input type="checkbox" data-param="trails" checked> Trails</label>
+      </div>
+      <div class="webgl-stage" data-scene="orbital">
+        <div class="stage-controls"><button class="btn" data-act="toggle-run">Pause</button></div>
+        <p class="webgl-fallback">WebGL is not available in this browser.</p>
+      </div>
+      <h2>Observations</h2>
+      <p>Particles hold stable orbits under the default rate; tilting past 60° visualizes the disc thickness. All numbers are <strong>sample data</strong>.</p>
+      <h2>Next steps</h2>
+      <ol class="steps">
+        <li class="is-current">Wire real telemetry into the parameter panel.</li>
+        <li>Add a second particle system with collision coloring.</li>
+      </ol>
+      <div class="doc-footer">${FOOTER_NOTE}</div>
+    </article>
+  </div>`,
+  extraScripts: [TAG_THREE, TAG_ORBIT],
+  keepChart: false,
+  keepMermaid: false,
+  authoringJs: `
+    const WEBGL_SCENES = {};
+    WEBGL_SCENES.orbital = {
+      setup(ctx) {
+        const scene = ctx.scene;
+        scene.background = new THREE.Color(ctx.theme.surfaceMuted);
+        const core = new THREE.Mesh(new THREE.SphereGeometry(0.5, 24, 24), new THREE.MeshStandardMaterial({ color: ctx.theme.series[0] }));
+        scene.add(core);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+        dir.position.set(3, 5, 2);
+        scene.add(dir);
+        const N = 240;
+        const pos = new Float32Array(N * 3);
+        const seeds = [];
+        for (let i = 0; i < N; i++) {
+          const r = 1.2 + Math.random() * 2.2;
+          const a = Math.random() * Math.PI * 2;
+          seeds.push({ r: r, a: a, speed: 0.3 + Math.random() * 0.9, y: (Math.random() - 0.5) * 0.6 });
+          pos[i * 3] = Math.cos(a) * r;
+          pos[i * 3 + 1] = seeds[i].y;
+          pos[i * 3 + 2] = Math.sin(a) * r;
+        }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const mat = new THREE.PointsMaterial({ color: ctx.theme.series[1], size: 0.05 });
+        const points = new THREE.Points(geo, mat);
+        scene.add(points);
+        return {
+          frame(t, dt, values) {
+            const v = values || { rate: 1, tilt: 25 };
+            points.rotation.y += dt * (v.rate || 0);
+            points.rotation.x = ((v.tilt || 0) * Math.PI) / 180;
+            core.rotation.y += dt * 0.2;
+          },
+          onTheme(theme) {
+            core.material.color.set(theme.series[0]);
+            mat.color.set(theme.series[1]);
+            scene.background.set(theme.surfaceMuted);
+          },
+          dispose() {
+            geo.dispose(); mat.dispose(); core.geometry.dispose(); core.material.dispose();
+          }
+        };
+      }
+    };`,
+});
+
+/* 10. Tech spec — checkout protocol + state-machine simulator */
+makeDocEx("tech-spec-protocol-states.html", {
+  header: {
+    title: "Checkout Protocol — State Machine",
+    badge: "Tech Spec",
+    subtitle: "Commerce team · v0.1.0 · 2026-11-25 · sample content",
+  },
+  body: `
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">Checkout Protocol — State Machine</p>
+      <dl class="spec-meta">
+        <div><dt>Status</dt><dd>Review</dd></div>
+        <div><dt>Version</dt><dd>0.1.0</dd></div>
+        <div><dt>Owners</dt><dd>commerce team</dd></div>
+        <div><dt>Date</dt><dd>2026-11-25</dd></div>
+        <div><dt>Source</dt><dd>docs/checkout-protocol.md</dd></div>
+      </dl>
+      <h2>Overview</h2>
+      <p>The checkout moves through five states; only the events listed below are legal. Try the interactive walkthrough — invalid transitions are never offered.</p>
+      <div class="sm-sim" data-sim="checkout"></div>
+      <h2>Client contract</h2>
+      <pre class="doc-code" data-lang="js" data-name="checkout-client.js"><code>const checkout = createCheckout({ vendor: 'acme' });
+checkout.send('select-shipping', { method: 'standard' });
+checkout.send('pay', { token: 'tok_v1' });</code></pre>
+      <h2>Try the guard</h2>
+      <p>The snippet below computes whether a transition is legal — run it right here:</p>
+      <pre class="doc-code" data-lang="js" data-playground><code>const legal = { cart: ['select-shipping'], shipping: ['pay', 'back'], payment: ['confirm'] };
+const state = 'cart';
+const event = 'select-shipping';
+console.log(legal[state].includes(event) ? state + ' -> ' + event + ' is legal' : 'illegal');</code></pre>
+      <div class="doc-footer">${FOOTER_NOTE}</div>
+    </article>
+  </div>`,
+  extraScripts: [TAG_HLJS],
+  keepChart: false,
+  keepMermaid: false,
+  authoringJs: `
+    const SM_SIMS = {};
+    SM_SIMS.checkout = {
+      initial: 'cart',
+      states: { cart: 'items ready', shipping: 'method chosen', payment: 'awaiting payment', review: 'final review', confirmed: 'order placed' },
+      transitions: [
+        { from: 'cart', event: 'select-shipping', to: 'shipping' },
+        { from: 'shipping', event: 'pay', to: 'payment' },
+        { from: 'shipping', event: 'back', to: 'cart' },
+        { from: 'payment', event: 'review', to: 'review' },
+        { from: 'payment', event: 'cancel', to: 'cart' },
+        { from: 'review', event: 'confirm', to: 'confirmed' },
+        { from: 'review', event: 'back', to: 'payment' }
+      ]
+    };`,
+});
+
+/* 11. Tech spec — service topology graph explorer */
+makeDocEx("graph-service-topology.html", {
+  header: {
+    title: "Service Topology — Dependency Map",
+    badge: "Tech Spec",
+    subtitle: "Platform team · 2026-11-25 · interactive — drag nodes, scroll to zoom",
+  },
+  body: `
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">Service Topology — Dependency Map</p>
+      <h2>Overview</h2>
+      <p>Interactive dependency map for the import platform. Drag nodes, scroll to zoom, hover for focus. Static version lives in the mermaid figure of the tech spec.</p>
+      <div class="graph-stage" data-graph="topology"></div>
+      <h2>Reading the map</h2>
+      <ul>
+        <li><strong>edge/gateway</strong> fronts all vendor traffic and fans into the importer.</li>
+        <li><strong>ledger</strong> is the only sink; its write path is batch-only.</li>
+      </ul>
+      <div class="callout warning"><i data-lucide="alert-triangle"></i><div><span class="callout-label">Warning</span>Removing edge/gateway partitions isolates vendors from the ledger within one batch window.</div></div>
+      <div class="doc-footer">${FOOTER_NOTE}</div>
+    </article>
+  </div>`,
+  extraScripts: [TAG_CYTO],
+  keepChart: false,
+  keepMermaid: false,
+  authoringJs: `
+    const GRAPHS = {};
+    GRAPHS.topology = {
+      layout: 'cose',
+      elements: [
+        { data: { id: 'edge', label: 'edge/gateway' } },
+        { data: { id: 'queue', label: 'queue' } },
+        { data: { id: 'importer', label: 'importer' } },
+        { data: { id: 'validator', label: 'validator' } },
+        { data: { id: 'ledger', label: 'ledger' } },
+        { data: { id: 'deadletter', label: 'dead-letter' } },
+        { data: { id: 'vendor', label: 'vendor drop' } },
+        { data: { id: 'scheduler', label: 'scheduler' } },
+        { data: { id: 'e1', source: 'vendor', target: 'edge' } },
+        { data: { id: 'e2', source: 'edge', target: 'queue' } },
+        { data: { id: 'e3', source: 'queue', target: 'importer' } },
+        { data: { id: 'e4', source: 'importer', target: 'validator' } },
+        { data: { id: 'e5', source: 'validator', target: 'ledger' } },
+        { data: { id: 'e6', source: 'validator', target: 'deadletter' } },
+        { data: { id: 'e7', source: 'scheduler', target: 'queue' } }
+      ]
+    };`,
+});
+
+/* 12. Report — dataset explorer */
+makeDoc("dataset-explorer-spend.html", {
+  header: {
+    title: "Cloud Spend — Dataset Explorer",
+    badge: "Report",
+    subtitle: "Platform team · 2026-11-25 · sample dataset",
+  },
+  body: `
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">Cloud Spend — Dataset Explorer</p>
+      <h2>Dataset</h2>
+      <p>Toggle columns with the menu, search across all fields, sort by any header. The footer always summarizes the visible rows.</p>
+      <table class="doc-table" data-dataset data-filterable>
+        <thead><tr><th>Service</th><th>Month</th><th class="num">Cost (USD)</th><th class="num">Anomalies</th></tr></thead>
+        <tbody>
+          <tr><td>compute</td><td>Sep</td><td class="num">18200</td><td class="num">1</td></tr>
+          <tr><td>storage</td><td>Sep</td><td class="num">4100</td><td class="num">0</td></tr>
+          <tr><td>compute</td><td>Oct</td><td class="num">19650</td><td class="num">2</td></tr>
+          <tr><td>network</td><td>Oct</td><td class="num">2890</td><td class="num">0</td></tr>
+          <tr><td>storage</td><td>Oct</td><td class="num">4380</td><td class="num">1</td></tr>
+          <tr><td>compute</td><td>Nov</td><td class="num">22410</td><td class="num">1</td></tr>
+          <tr><td>network</td><td>Nov</td><td class="num">3120</td><td class="num">0</td></tr>
+          <tr><td>storage</td><td>Nov</td><td class="num">4520</td><td class="num">0</td></tr>
+        </tbody>
+      </table>
+      <h2>Reading</h2>
+      <p>Compute drives ~72% of spend and carries every anomaly; network is steady quarter over quarter. All figures are sample data.</p>
+      <div class="doc-footer">${FOOTER_NOTE}</div>
+    </article>
+  </div>`,
+  keepChart: false,
+  keepMermaid: false,
+});
+
+/* 13. Playground — string utilities */
+makeDocEx("playground-string-utils.html", {
+  header: {
+    title: "String Utilities — Playground",
+    badge: "Playground",
+    subtitle: "Platform team · 2026-11-25 · runnable samples — pure compute, no DOM, no network",
+  },
+  body: `
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">String Utilities — Playground</p>
+      <h2>slugify</h2>
+      <p>Turns headings into URL-safe ids — the same helper the document TOC uses.</p>
+      <pre class="doc-code" data-lang="js" data-playground data-name="slugify.js"><code>function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+console.log(slugify('Rollout Steps & Verification'));
+console.log(slugify('  --Hello, World!--  '));</code></pre>
+      <h2>truncate</h2>
+      <p>Snippet-length truncation with an ellipsis that respects word boundaries.</p>
+      <pre class="doc-code" data-lang="js" data-playground data-name="truncate.js"><code>function truncate(text, max) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(' ')) + '\u2026';
+}
+console.log(truncate('The importer drains the queue before freezing', 24));
+console.warn('second sample: expected output only');</code></pre>
+      <div class="callout warning"><i data-lucide="alert-triangle"></i><div><span class="callout-label">Note</span>Snippets run in a Web Worker: pure computation only — no DOM, no network. Use Stop to terminate a runaway run.</div></div>
+      <div class="doc-footer">${FOOTER_NOTE}</div>
+    </article>
+  </div>`,
+  extraScripts: [TAG_HLJS],
+  keepChart: false,
+  keepMermaid: false,
+});
+
+/* 14. Report — before/after slider for a redesign POC */
+makeDoc("design-slider-onboarding.html", {
+  header: {
+    title: "Onboarding Redesign — Before / After",
+    badge: "Report",
+    subtitle: "Growth team · 2026-11-25 · drag the divider — sample mock screens",
+  },
+  body: `
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">Onboarding Redesign — Before / After</p>
+      <h2>Comparison</h2>
+      <p>Drag the divider (or focus it and use the arrow keys) to compare the legacy empty state with the guided sample project.</p>
+      <div class="ba-slider" style="min-height: 16rem;">
+        <div class="ba-pane ba-before">
+          <span class="pane-label">Before</span>
+          <div style="border: 1px dashed var(--border); border-radius: 0.5rem; padding: 2.5rem 1.5rem; text-align: center; color: var(--text-muted); font-size: 13px;">Empty workspace — "No data yet."</div>
+        </div>
+        <div class="ba-pane ba-after">
+          <span class="pane-label">After</span>
+          <div style="border: 1px solid var(--accent); border-radius: 0.5rem; padding: 2.5rem 1.5rem; text-align: center; font-size: 13px; background: var(--surface-muted);">Guided sample project — first value in ~8 minutes</div>
+        </div>
+        <div class="ba-handle" role="slider" tabindex="0" aria-label="Compare before and after" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>
+      </div>
+      <h2>What changed</h2>
+      <ul>
+        <li>Empty state replaced by a seeded sample project.</li>
+        <li>Checklist nudge appears only after the first dead-end.</li>
+      </ul>
+      <div class="doc-footer">${FOOTER_NOTE}</div>
+    </article>
+  </div>`,
+  keepChart: false,
+  keepMermaid: false,
+});
+
+/* ------------------------------------------------------------------ */
 const EXAMPLE_META = [
   { file: "dashboard-quarterly-spend.html", label: "Dashboard", title: "Q3 FY26 Cloud Spend", blurb: "KPI row, Chart.js card and a Mermaid spend flow with zoom, copy and SVG export.", tags: "KPIs · chart · diagram" },
+  { file: "simulation-orbital-poc.html", label: "Simulation", title: "Orbital Simulation — 3D POC", blurb: "WebGL stage with OrbitControls and a what-if panel driving an orbital particle field live.", tags: "WebGL · params · three.js" },
+  { file: "tech-spec-protocol-states.html", label: "Tech Spec", title: "Checkout Protocol — State Machine", blurb: "Interactive state-machine walkthrough, highlighted code with copy, runnable guard snippet.", tags: "sm-sim · highlighting · playground" },
+  { file: "graph-service-topology.html", label: "Tech Spec", title: "Service Topology — Dependency Map", blurb: "Pan/zoom cytoscape dependency map in token colors, warning callouts.", tags: "graph · cytoscape" },
+  { file: "dataset-explorer-spend.html", label: "Report", title: "Cloud Spend — Dataset Explorer", blurb: "Column toggles, cross-column search, and visible-row numeric summaries.", tags: "dataset · sort · summaries" },
+  { file: "playground-string-utils.html", label: "Playground", title: "String Utilities — Playground", blurb: "Runnable snippets in a Web Worker with Run/Stop and captured output.", tags: "playground · highlighting" },
+  { file: "design-slider-onboarding.html", label: "Report", title: "Onboarding Redesign — Before / After", blurb: "Draggable, keyboard-accessible divider comparing two mock screens.", tags: "ba-slider · a11y" },
+  { file: "report-sprint-42.html", label: "Report", title: "Sprint 42 — Delivery Review", blurb: "TL;DR hero, metrics strip, findings with a figure and a table, appendix.", tags: "TOC · metrics · figure" },
+  { file: "tech-spec-importer-service.html", label: "Tech Spec", title: "Importer Service — Tech Spec", blurb: "Spec header, decision callout, sortable/filterable table, steps, before/after diff.", tags: "TOC · callouts · table · diff" },
+  { file: "product-spec-onboarding.html", label: "Product Spec", title: "Onboarding Revamp — Product Spec", blurb: "Personas, handDrawn UX flow figure, success-metric line chart.", tags: "TOC · handDrawn · chart" },
+  { file: "manual-importer-runbook.html", label: "Manual", title: "Importer Rollback Runbook", blurb: "Prereq chips, warning callout, steps with states, checklists, troubleshooting.", tags: "steps · checklists · prereqs" },
+  { file: "decision-queue-vendor.html", label: "Decision", title: "ADR-014 — Queue Vendor for the Importer", blurb: "Pros/cons pairs, comparison matrix, decision callout, revisit conditions.", tags: "pros-cons · matrix" },
+  { file: "roadmap-platform-2027h1.html", label: "Roadmap", title: "Platform Roadmap — H1 2027", blurb: "Gantt figure, milestone rail with statuses and owners, roadmap changelog.", tags: "gantt · milestones · changelog" },
+  { file: "release-notes-importer-0.3.0.html", label: "Release Notes", title: "Importer 0.3.0 — Release Notes", blurb: "Changelog rail (Added/Changed/Fixed/Removed), upgrade steps, before/after diff.", tags: "changelog · steps · diff" },
   { file: "report-sprint-42.html", label: "Report", title: "Sprint 42 — Delivery Review", blurb: "TL;DR hero, metrics strip, findings with a figure and a table, appendix.", tags: "TOC · metrics · figure" },
   { file: "tech-spec-importer-service.html", label: "Tech Spec", title: "Importer Service — Tech Spec", blurb: "Spec header, decision callout, sortable/filterable table, steps, before/after diff.", tags: "TOC · callouts · table · diff" },
   { file: "product-spec-onboarding.html", label: "Product Spec", title: "Onboarding Revamp — Product Spec", blurb: "Personas, handDrawn UX flow figure, success-metric line chart.", tags: "TOC · handDrawn · chart" },

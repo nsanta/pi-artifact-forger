@@ -17,5 +17,11 @@ palette/mode pickers, table sort/filter, `Ctrl+K` search, diagram zoom, and prin
 | `decision-queue-vendor.html` | Decision (ADR) | Pros/cons pairs, comparison matrix with `Estimates` badge, decision callout, revisit conditions |
 | `roadmap-platform-2027h1.html` | Roadmap | Mermaid gantt figure, milestone rail with status + owners, roadmap changelog |
 | `release-notes-importer-0.3.0.html` | Release notes | Added/Changed/Fixed/Removed changelog rail, upgrade steps, before/after diff |
+| `simulation-orbital-poc.html` | Simulation (WebGL) | `webgl-stage` + OrbitControls + what-if parameter panel driving an orbital particle scene live |
+| `tech-spec-protocol-states.html` | Tech spec + state machine | `sm-sim` walkthrough over a checkout protocol, highlighted code with copy/name, runnable guard snippet |
+| `graph-service-topology.html` | Tech spec + graph explorer | `graph-stage` (cytoscape) dependency map, token-colored, pan/zoom |
+| `dataset-explorer-spend.html` | Report + dataset explorer | `data-dataset` table: column toggles, cross-column search, visible-row numeric summaries |
+| `playground-string-utils.html` | Code playground | `data-playground` snippets in a Web Worker with Run/Stop and captured output, highlighted |
+| `design-slider-onboarding.html` | Report + before/after slider | Draggable, keyboard-accessible divider comparing two HTML mock screens |
 
 Regenerate after editing the canonical template: `npm run make-examples`.

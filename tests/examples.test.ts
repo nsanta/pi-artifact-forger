@@ -9,13 +9,19 @@ const files = readdirSync(EXAMPLES).filter((f) => f.endsWith(".html") && f !== "
 
 const EXPECTED = [
   "dashboard-quarterly-spend.html",
+  "dataset-explorer-spend.html",
   "decision-queue-vendor.html",
+  "design-slider-onboarding.html",
+  "graph-service-topology.html",
   "manual-importer-runbook.html",
+  "playground-string-utils.html",
   "product-spec-onboarding.html",
   "release-notes-importer-0.3.0.html",
   "report-sprint-42.html",
   "roadmap-platform-2027h1.html",
+  "simulation-orbital-poc.html",
   "tech-spec-importer-service.html",
+  "tech-spec-protocol-states.html",
 ];
 
 describe("examples", () => {
