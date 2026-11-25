@@ -18,6 +18,7 @@ const EXPECTED = [
   "product-spec-onboarding.html",
   "release-notes-importer-0.3.0.html",
   "report-sprint-42.html",
+  "report-world-presence.html",
   "roadmap-platform-2027h1.html",
   "simulation-orbital-poc.html",
   "tech-spec-importer-service.html",

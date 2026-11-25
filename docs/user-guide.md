@@ -127,6 +127,17 @@ Press `Ctrl+K` (or `Cmd+K`), or `/` when no input is focused:
 - Tables marked filterable get a **filter box** that hides non-matching rows
   as you type.
 
+### Maps
+
+Artifacts with geographic data embed a real **vector map** (world-atlas countries, Natural Earth data) rendered with d3-geo projections:
+
+- **Choropleth**: countries colored by value on a five-step scale from the artifact's palette; a legend shows the value bins.
+- **Markers**: cities or points of interest placed by real latitude/longitude.
+- **Hover** any region or marker for its name and value; **scroll** to zoom, **drag** to pan, **double-click** to reset the view.
+- An accessible **data table** (collapsed below the map) lists every region and marker with its value.
+
+Map geometry is embedded in the artifact — maps render offline like everything else.
+
 ### Components you will see
 
 | Component | Where |
@@ -141,6 +152,7 @@ Press `Ctrl+K` (or `Cmd+K`), or `/` when no input is focused:
 | Before/after diff pairs | Interface changes, migrations, release notes |
 | Version rail (changelog) | Release notes, roadmaps |
 | Milestone rail with status and owners | Roadmaps |
+| Geographic maps (choropleth + markers) | Any genre with geographic data |
 
 Checkboxes are deliberately **not** persisted — reloading resets them, so a
 runbook never shows stale completion state.

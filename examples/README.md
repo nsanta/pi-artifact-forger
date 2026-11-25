@@ -17,6 +17,7 @@ palette/mode pickers, table sort/filter, `Ctrl+K` search, diagram zoom, and prin
 | `decision-queue-vendor.html` | Decision (ADR) | Pros/cons pairs, comparison matrix with `Estimates` badge, decision callout, revisit conditions |
 | `roadmap-platform-2027h1.html` | Roadmap | Mermaid gantt figure, milestone rail with status + owners, roadmap changelog |
 | `release-notes-importer-0.3.0.html` | Release notes | Added/Changed/Fixed/Removed changelog rail, upgrade steps, before/after diff |
+| `report-world-presence.html` | Report + geographic map | `geo-stage` world choropleth (embedded world-atlas 110m) + lat/lon hub markers, pan/zoom, accessible data table |
 | `simulation-orbital-poc.html` | Simulation (WebGL) | `webgl-stage` + OrbitControls + what-if parameter panel driving an orbital particle scene live |
 | `tech-spec-protocol-states.html` | Tech spec + state machine | `sm-sim` walkthrough over a checkout protocol, highlighted code with copy/name, runnable guard snippet |
 | `graph-service-topology.html` | Tech spec + graph explorer | `graph-stage` (cytoscape) dependency map, token-colored, pan/zoom |

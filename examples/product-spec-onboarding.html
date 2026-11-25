@@ -960,6 +960,18 @@ flowchart TD
     .doc .ba-handle { position: absolute; top: 0; bottom: 0; left: var(--ba, 50%); width: 2px; background: var(--accent); cursor: ew-resize; touch-action: none; z-index: 2; }
     .doc .ba-handle::after { content: ""; position: absolute; top: 50%; left: -11px; width: 24px; height: 24px; margin-top: -12px; border-radius: 9999px; background: var(--surface); border: 2px solid var(--accent); }
     .doc .ba-slider { height: -moz-fit-content; height: fit-content; }
+    /* ---- geo-stage (batch: geographic maps) ---- */
+    .doc .geo-stage { position: relative; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface-muted); margin: 0 0 1.25rem; overflow: hidden; }
+    .doc .geo-stage svg { display: block; width: 100%; height: auto; cursor: grab; }
+    .doc .geo-stage svg:active { cursor: grabbing; }
+    .doc .geo-stage path.region { fill: var(--surface); stroke: var(--border); stroke-width: 0.5; }
+    .doc .geo-stage path.borders { fill: none; stroke: var(--border); stroke-width: 0.6; }
+    .doc .geo-stage circle.marker { fill: var(--accent); stroke: var(--surface); stroke-width: 1; }
+    .doc .geo-legend { position: absolute; top: 0.5rem; right: 0.5rem; z-index: 1; display: flex; align-items: center; gap: 0.25rem; background: color-mix(in srgb, var(--surface) 85%, transparent); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.25rem 0.5rem; font-size: 10.5px; color: var(--text-muted); }
+    .doc .geo-legend .sw { width: 0.85rem; height: 0.6rem; display: inline-block; }
+    .doc .geo-tooltip { position: absolute; z-index: 3; pointer-events: none; background: var(--surface); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.3rem 0.55rem; font-size: 12px; color: var(--text); display: none; white-space: nowrap; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+    .doc .geo-fallback { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); font-size: 13px; margin: 0; padding: 1rem; }
+    .doc .geo-stage.no-geo .geo-fallback { display: flex; }
     @media print {
       .doc { display: block; padding: 0; max-width: none; }
       .doc-toc { position: static; max-height: none; border: none; background: none; padding: 0; }
@@ -1213,6 +1225,204 @@ flowchart TD
           closeSearch();
         }
       });
+
+      /* ---- geo-stage: geographic maps (guarded on d3-geo + topojson) ---- */
+      if (typeof d3 !== 'undefined' && typeof d3.geoPath !== 'undefined' && typeof topojson !== 'undefined') {
+        const PRESETS = {
+          equalEarth: function () { return d3.geoEqualEarth(); },
+          naturalEarth1: function () { return d3.geoNaturalEarth1(); },
+          mercator: function () { return d3.geoMercator(); },
+          conicConformal: function (parallels) { return d3.geoConicConformal().parallels(parallels || [-24, -48]); },
+          albersUsa: function () { return d3.geoAlbersUsa(); },
+          identity: function () { return d3.geoIdentity(); }
+        };
+        function joinKeys(feature) {
+          const id = feature.id != null ? String(feature.id).padStart(3, '0') : null;
+          const name = feature.properties && feature.properties.name ? String(feature.properties.name).toLowerCase() : null;
+          return [id, name];
+        }
+        function valueFor(feature, values) {
+          const keys = joinKeys(feature);
+          if (keys[0] !== null && values[keys[0]] !== undefined) return values[keys[0]];
+          if (keys[1] !== null && values[keys[1]] !== undefined) return values[keys[1]];
+          return undefined;
+        }
+        doc.querySelectorAll('.geo-stage').forEach(function (stage) {
+          const embedId = stage.getAttribute('data-embed');
+          const embedEl = embedId ? document.getElementById(embedId) : null;
+          if (!embedEl) { stage.classList.add('no-geo'); return; }
+          let topo;
+          try { topo = JSON.parse(embedEl.textContent); } catch (err) { stage.classList.add('no-geo'); return; }
+          const object = topo.objects[stage.getAttribute('data-object') || 'countries'];
+          if (!object || typeof d3.geoPath !== 'function' || typeof topojson.feature !== 'function') { stage.classList.add('no-geo'); return; }
+
+          const filterAttr = (stage.getAttribute('data-filter') || '').split(',').map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+          let features = topojson.feature(topo, object).features;
+          if (filterAttr.length) {
+            features = features.filter(function (f) {
+              const keys = joinKeys(f);
+              return filterAttr.includes(keys[0]) || (keys[1] && filterAttr.includes(keys[1]));
+            });
+          }
+          if (!features.length) { stage.classList.add('no-geo'); return; }
+
+          const preset = stage.getAttribute('data-projection') || 'equalEarth';
+          const parallels = (stage.getAttribute('data-parallels') || '').split(',').map(Number).filter(function (n) { return !isNaN(n); });
+          const maker = PRESETS[preset] || PRESETS.equalEarth;
+          const projection = maker(parallels.length ? parallels : undefined);
+
+          const W = 720, H = Math.round(W * 0.55);
+          projection.fitSize([W, H], { type: 'FeatureCollection', features: features });
+          const path = d3.geoPath(projection);
+
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); /* proportional scaling on resize (M8) */
+          svg.setAttribute('role', 'img');
+          svg.setAttribute('aria-label', stage.getAttribute('data-label') || 'Geographic map');
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          svg.appendChild(g);
+
+          const valuesName = stage.getAttribute('data-values');
+          const values = (valuesName && typeof window[valuesName] === 'object') ? window[valuesName] : null;
+          const pointsName = stage.getAttribute('data-points');
+          const points = (pointsName && typeof window[pointsName] === 'object') ? window[pointsName] : [];
+
+          /* choropleth: five discrete bins over [min, max] -> series[0..4] (M5) */
+          let colorFor = function () { return null; };
+          let legendRows = null;
+          if (values) {
+            const nums = features.map(function (f) { return valueFor(f, values); }).filter(function (v) { return typeof v === 'number'; });
+            if (nums.length) {
+              const min = Math.min.apply(null, nums), max = Math.max.apply(null, nums);
+              const ramp = getActiveTheme().series.slice(0, 5);
+              if (max === min) {
+                colorFor = function () { return ramp[2]; };
+                legendRows = [[ramp[2], String(max)]];
+              } else {
+                colorFor = function (v) {
+                  if (typeof v !== 'number') return null;
+                  const i = Math.min(4, Math.max(0, Math.floor(((v - min) / (max - min)) * 5)));
+                  return ramp[i];
+                };
+                legendRows = ramp.map(function (c, i) { return [c, (min + ((max - min) / 5) * i).toFixed(0)]; });
+              }
+            }
+          }
+
+          const tip = document.createElement('div');
+          tip.className = 'geo-tooltip';
+          stage.appendChild(tip);
+          function showTip(clientX, clientY, text) {
+            const r = stage.getBoundingClientRect();
+            tip.textContent = text; /* text-only: injection-safe */
+            tip.style.display = 'block';
+            tip.style.left = Math.min(r.width - 140, clientX - r.left + 12) + 'px';
+            tip.style.top = (clientY - r.top + 14) + 'px';
+          }
+          function hideTip() { tip.style.display = 'none'; }
+
+          const tableRows = [];
+          features.forEach(function (f) {
+            const v = values ? valueFor(f, values) : undefined;
+            const d = path(f);
+            if (!d) return;
+            const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathEl.setAttribute('d', d);
+            pathEl.setAttribute('class', 'region');
+            const fill = colorFor(v);
+            if (fill) pathEl.style.fill = fill; /* inline style beats the .region CSS rule */
+            const name = (f.properties && f.properties.name) || f.id || 'region';
+            pathEl.addEventListener('mousemove', function (ev) { showTip(ev.clientX, ev.clientY, name + (v !== undefined ? ': ' + v : '')); });
+            pathEl.addEventListener('mouseleave', hideTip);
+            if (!values || v !== undefined) tableRows.push([name, v]);
+            g.appendChild(pathEl);
+          });
+
+          const mesh = topojson.mesh(topo, object, function (a, b) { return a !== b; });
+          const meshD = path(mesh);
+          if (meshD) {
+            const meshEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            meshEl.setAttribute('d', meshD);
+            meshEl.setAttribute('class', 'borders');
+            g.appendChild(meshEl);
+          }
+
+          points.forEach(function (p) {
+            const xy = projection([p.lon, p.lat]);
+            if (!xy || !isFinite(xy[0]) || !isFinite(xy[1])) return; /* null/NaN guard (M4) */
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', xy[0]); c.setAttribute('cy', xy[1]); c.setAttribute('r', 4);
+            c.setAttribute('class', 'marker');
+            c.addEventListener('mousemove', function (ev) { showTip(ev.clientX, ev.clientY, p.name + (p.value !== undefined ? ': ' + p.value : '')); });
+            c.addEventListener('mouseleave', hideTip);
+            tableRows.push([p.name, p.value]);
+            g.appendChild(c);
+          });
+
+          if (legendRows) {
+            const legend = document.createElement('div');
+            legend.className = 'geo-legend';
+            legendRows.forEach(function (row) {
+              const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = row[0];
+              const label = document.createElement('span'); label.textContent = row[1];
+              legend.appendChild(sw); legend.appendChild(label);
+            });
+            stage.appendChild(legend);
+          }
+
+          /* vanilla pan/zoom on <g>; double-click resets (no d3.zoom dependency) */
+          let view = { k: 1, x: 0, y: 0 };
+          function applyView() { g.setAttribute('transform', 'translate(' + view.x + ',' + view.y + ') scale(' + view.k + ')'); }
+          svg.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            const r = svg.getBoundingClientRect();
+            const mx = ((e.clientX - r.left) / r.width) * W, my = ((e.clientY - r.top) / r.height) * H;
+            const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+            const nk = Math.min(8, Math.max(1, view.k * factor));
+            view.x = mx - nk * (mx - view.x) / view.k;
+            view.y = my - nk * (my - view.y) / view.k;
+            view.k = nk;
+            if (view.k === 1) { view.x = 0; view.y = 0; }
+            applyView();
+          }, { passive: false });
+          let drag = null;
+          svg.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return;
+            const r = svg.getBoundingClientRect();
+            drag = { sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, scale: W / r.width };
+            svg.setPointerCapture(e.pointerId);
+          });
+          svg.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            view.x = drag.vx + (e.clientX - drag.sx) * drag.scale;
+            view.y = drag.vy + (e.clientY - drag.sy) * drag.scale;
+            applyView();
+          });
+          svg.addEventListener('pointerup', function () { drag = null; });
+          svg.addEventListener('dblclick', function () { view = { k: 1, x: 0, y: 0 }; applyView(); });
+          applyView();
+          stage.appendChild(svg);
+
+          /* accessible alternative: collapsed data table (M10) */
+          const details = document.createElement('details');
+          details.className = 'col-menu';
+          const summary = document.createElement('summary');
+          summary.textContent = 'Data table';
+          const dt = document.createElement('table'); dt.className = 'doc-table';
+          const thead = document.createElement('thead');
+          thead.innerHTML = '<tr><th>Region / point</th><th>Value</th></tr>';
+          const tbody = document.createElement('tbody');
+          tableRows.forEach(function (row) {
+            const tr = document.createElement('tr');
+            const td1 = document.createElement('td'); td1.textContent = row[0];
+            const td2 = document.createElement('td'); td2.textContent = row[1] !== undefined ? row[1] : '';
+            tr.appendChild(td1); tr.appendChild(td2); tbody.appendChild(tr);
+          });
+          thead && dt.appendChild(thead); dt.appendChild(tbody);
+          details.appendChild(summary); details.appendChild(dt);
+          stage.parentNode.insertBefore(details, stage.nextSibling);
+        });
+      }
 
       /* ---- batch 3: copy + name on every code block, then highlighting ---- */
       doc.querySelectorAll('pre.doc-code').forEach(function (pre) {

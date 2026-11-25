@@ -3,7 +3,7 @@
 // each derived from the canonical template the same way the artifact-forger agent
 // derives artifacts: keep tokens + theme sync + kit, replace content per genre,
 // strip unused CDN scripts, honor honesty badges. Regenerate with: npm run make-examples
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -891,6 +891,73 @@ makeDoc("design-slider-onboarding.html", {
 });
 
 /* ------------------------------------------------------------------ */
+/* 15. Report — world presence (geo-stage, embedded 110m TopoJSON)     */
+/* ------------------------------------------------------------------ */
+
+async function fetchGeo() {
+  const cacheDir = resolve(OUT_DIR, ".geo-cache");
+  const cacheFile = resolve(cacheDir, "countries-110m.json");
+  mkdirSync(cacheDir, { recursive: true });
+  if (existsSync(cacheFile)) return readFileSync(cacheFile, "utf8");
+  const url = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
+  console.log("fetching world-atlas 110m (first run only, cached afterwards)…");
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("geo: cannot download " + url + " (" + res.status + ") — offline? Place the JSON manually at " + cacheFile);
+  const json = await res.text();
+  writeFileSync(cacheFile, json);
+  return json;
+}
+
+if (process.argv.includes("--with-geo")) {
+  const geoJson = await fetchGeo();
+  /* JSON safety for inline <script>: neutralize closing-tag sequences */
+  const geoSafe = geoJson.replace(/<\//g, "<\\/");
+  const geoEmbed = '  <script type="application/json" id="geo-world">' + geoSafe + '</script>';
+  makeDocEx("report-world-presence.html", {
+    header: {
+      title: "Global Presence — Where We Operate",
+      badge: "Report",
+      subtitle: "Platform team · 2026-11-25 · choropleth + markers are sample data",
+    },
+    body: geoEmbed + `
+  <div class="doc">
+    <nav class="doc-toc" aria-label="Table of contents"></nav>
+    <article class="doc-body">
+      <p class="doc-display">Global Presence — Where We Operate</p>
+      <h2>Map</h2>
+      <p>Color = presence score by country (darker is more presence); circles mark hub cities. Hover regions and markers for details; scroll to zoom, drag to pan, double-click to reset.</p>
+      <div class="geo-stage" data-geo="world" data-object="countries" data-projection="equalEarth" data-embed="geo-world" data-values="REGION_VALUES" data-points="MAP_POINTS" data-label="World presence map">
+        <p class="geo-fallback">Map data unavailable (d3/topojson missing or geometry stripped).</p>
+      </div>
+      <h2>Presence detail</h2>
+      <p>Hub cities carry the operational load; the choropleth aggregates presence score by country. All values are sample data.</p>
+      <div class="doc-footer">${FOOTER_NOTE}</div>
+    </article>
+  </div>`,
+    extraScripts: [
+      '<script src="https://cdn.jsdelivr.net/npm/d3-array@3.2.4/dist/d3-array.min.js"></script>',
+      '<script src="https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/dist/d3-geo.min.js"></script>',
+      '<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>',
+    ],
+    keepChart: false,
+    keepMermaid: false,
+    authoringJs: `
+    REGION_VALUES = {
+      '032': 92, '076': 84, '840': 78, '356': 71, '276': 66, '826': 63,
+      '392': 58, '156': 55, '710': 41, '036': 38, '250': 33, '380': 27
+    }; /* ISO 3166-1 numeric ids, zero-padded — sample data */
+    MAP_POINTS = [
+      { name: 'Buenos Aires', lon: -58.38, lat: -34.60, value: 'hub' },
+      { name: 'São Paulo', lon: -46.63, lat: -23.55, value: 'hub' },
+      { name: 'New York', lon: -74.01, lat: 40.71, value: 'hub' },
+      { name: 'London', lon: -0.13, lat: 51.51, value: 'hub' },
+      { name: 'Singapore', lon: 103.82, lat: 1.35, value: 'hub' },
+      { name: 'Tokyo', lon: 139.69, lat: 35.69, value: 'hub' }
+    ];`,
+  });
+}
+
+/* ------------------------------------------------------------------ */
 const EXAMPLE_META = [
   { file: "dashboard-quarterly-spend.html", label: "Dashboard", title: "Q3 FY26 Cloud Spend", blurb: "KPI row, Chart.js card and a Mermaid spend flow with zoom, copy and SVG export.", tags: "KPIs · chart · diagram" },
   { file: "simulation-orbital-poc.html", label: "Simulation", title: "Orbital Simulation — 3D POC", blurb: "WebGL stage with OrbitControls and a what-if panel driving an orbital particle field live.", tags: "WebGL · params · three.js" },
@@ -914,6 +981,11 @@ const EXAMPLE_META = [
   { file: "roadmap-platform-2027h1.html", label: "Roadmap", title: "Platform Roadmap — H1 2027", blurb: "Gantt figure, milestone rail with statuses and owners, roadmap changelog.", tags: "gantt · milestones · changelog" },
   { file: "release-notes-importer-0.3.0.html", label: "Release Notes", title: "Importer 0.3.0 — Release Notes", blurb: "Changelog rail (Added/Changed/Fixed/Removed), upgrade steps, before/after diff.", tags: "changelog · steps · diff" },
 ];
+
+/* conditional: the geo example only when generated with --with-geo */
+if (process.argv.includes("--with-geo") && examples["report-world-presence.html"]) {
+  EXAMPLE_META.push({ file: "report-world-presence.html", label: "Report", title: "Global Presence — Where We Operate", blurb: "Embedded world-atlas choropleth + lat/lon hub markers, pan/zoom, accessible data table.", tags: "geo · choropleth · markers" });
+}
 
 function makeIndex() {
   let out = TEMPLATE.replace(CHART_TAG, "").replace(MERMAID_TAG, "");
