@@ -3,3 +3,7 @@ dist/
 .pi/
 .playwright-mcp/
 examples/.geo-cache/
+# EGM design-process artifacts (brainstorm briefs, drafts, goldfish reports)
+/concepts_brief*.md
+/design_draft*.md
+/egm/

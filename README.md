@@ -60,13 +60,41 @@ npm install && npm test
 
 ## Set up the agent (one-time per machine)
 
-Pi packages can ship skills but **not agents**, so the agent installs user-global:
+### Why this step exists
+
+Pi packages can ship **skills** (the `artifact-forger` skill loads automatically), but **not agents** — pi has no mechanism to install agents from a package. The zero-context `artifact-forger` agent therefore must be copied manually into your user-global agent directory (`~/.pi/agent/agents/`). That is all `npm run install:agent` does.
+
+Skipping it is safe: the skill includes an inline-generation fallback, so artifacts still get generated — just in your main session's context instead of a fresh subagent. Installing the agent keeps the design system out of your session's context.
+
+### Run it from wherever the package lives
+
+Installed with `pi install` (git or npm):
+
+```sh
+cd ~/.pi/agent/npm/node_modules/pi-artifact-forger
+npm run install:agent        # or: node scripts/install-agent.mjs
+```
+
+No `npm install` needed first — the script uses only Node built-ins and no dependencies.
+
+From a dev clone:
 
 ```sh
 npm run install:agent
 ```
 
-This copies the agent to `~/.pi/agent/agents/artifact-forger.md`, the canonical template to `~/.pi/agent/artifact-forger/_template.html`, and removes legacy `artifact-forge` copies from the pre-package setup. Re-run it after editing the package sources — never edit the installed copies in place.
+### What it copies
+
+| Source in the package | Installed to |
+| --- | --- |
+| `agents/artifact-forger.md` | `~/.pi/agent/agents/artifact-forger.md` |
+| `resources/artifact-forger/_template.html` | `~/.pi/agent/artifact-forger/_template.html` |
+
+It also removes legacy `artifact-forge` copies left over from the pre-package setup.
+
+### Re-run after package updates
+
+The script **copies** files, so updating the package (`git pull`, or a fresh `pi install`) does **not** refresh the user-global copies on its own — re-run the script after every update. And never edit the installed copies in place: edit the package source, then re-run.
 
 ## Usage
 

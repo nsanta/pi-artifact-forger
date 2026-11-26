@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- Design-process artifacts from the repository root: EGM brainstorm briefs (`concepts_brief*.md`), design drafts (`design_draft*.md`), Goldfish review reports (`egm/`), the `print-dark-emulation.png` dev screenshot, and the one-off `scripts/patch-fit-zoom.mjs` migration (already applied everywhere). All remain retrievable from git history.
+
+### Changed
+
+- Template Document Kit comment now points to `tests/kit.test.ts` instead of the removed `design_draft.md`; examples regenerated (`npm run make-examples -- --with-geo`).
+
 ## [0.2.0] - 2026-11-24
 
 ### Added
